@@ -23,6 +23,7 @@ export default {
       return handleRsvp(request, env)
     }
 
+
     /*
      * ----------------------------------------------------------
      * Static website
@@ -40,6 +41,10 @@ export default {
  * ------------------------------------------------------------
  *
  * GET /api/invitation?code=MG-XXXXXX
+ *
+ * Returns the guests belonging to the invitation.
+ *
+ * The invitation code itself is deliberately NOT returned.
  * ------------------------------------------------------------
  */
 
@@ -53,7 +58,7 @@ async function handleInvitation(request, env) {
       {
         status: 405,
         headers: {
-          Allow: 'GET'
+          'Allow': 'GET'
         }
       }
     )
@@ -63,13 +68,29 @@ async function handleInvitation(request, env) {
   const rawCode = url.searchParams.get('code')
 
   if (!rawCode) {
-    return invalidInvitationResponse()
+    return Response.json(
+      {
+        ok: false,
+        error: 'Invalid invitation'
+      },
+      {
+        status: 404
+      }
+    )
   }
 
   const code = rawCode.trim().toUpperCase()
 
   if (!/^MG-[A-Z0-9]{6}$/.test(code)) {
-    return invalidInvitationResponse()
+    return Response.json(
+      {
+        ok: false,
+        error: 'Invalid invitation'
+      },
+      {
+        status: 404
+      }
+    )
   }
 
   try {
@@ -86,7 +107,15 @@ async function handleInvitation(request, env) {
       .first()
 
     if (!invitation || invitation.active !== 1) {
-      return invalidInvitationResponse()
+      return Response.json(
+        {
+          ok: false,
+          error: 'Invalid invitation'
+        },
+        {
+          status: 404
+        }
+      )
     }
 
     const result = await env.margo_glenn_wedding_db
@@ -96,6 +125,7 @@ async function handleInvitation(request, env) {
           name,
           invited_to_dinner,
           invited_to_evening,
+          rsvp_status,
           dinner_rsvp_status,
           evening_rsvp_status
         FROM guests
@@ -105,35 +135,19 @@ async function handleInvitation(request, env) {
       .bind(invitation.id)
       .all()
 
-    const settings = await env.margo_glenn_wedding_db
-      .prepare(`
-        SELECT
-          rsvp_deadline,
-          rsvp_change_deadline
-        FROM wedding_settings
-        WHERE id = 1
-        LIMIT 1
-      `)
-      .first()
-
     const guests = result.results.map((guest) => ({
       id: guest.id,
       name: guest.name,
       invitedToDinner: guest.invited_to_dinner === 1,
       invitedToEvening: guest.invited_to_evening === 1,
+      rsvpStatus: guest.rsvp_status,
       dinnerRsvpStatus: guest.dinner_rsvp_status,
       eveningRsvpStatus: guest.evening_rsvp_status
     }))
 
     return Response.json({
       ok: true,
-      guests,
-      deadlines: settings
-        ? {
-            rsvpDeadline: settings.rsvp_deadline,
-            rsvpChangeDeadline: settings.rsvp_change_deadline
-          }
-        : null
+      guests
     })
   } catch (error) {
     console.error('Invitation lookup failed:', error)
@@ -158,30 +172,35 @@ async function handleInvitation(request, env) {
  *
  * POST /api/rsvp
  *
- * Expected body:
+ * Expected JSON:
  *
  * {
- *   "code": "MG-XXXXXX",
+ *   "code": "MG-TEST02",
  *   "guests": [
  *     {
- *       "id": 1,
- *       "dinner": "attending",
- *       "evening": "declined",
- *       "dietary": {
- *         "dinner": [
+ *       "id": 2,
+ *       "dinner": {
+ *         "status": "attending",
+ *         "dietaryRequirements": [
  *           {
  *             "category": "vegetarian"
  *           }
- *         ],
- *         "evening": []
+ *         ]
+ *       },
+ *       "evening": {
+ *         "status": "attending",
+ *         "dietaryRequirements": [
+ *           {
+ *             "category": "gluten"
+ *           }
+ *         ]
  *       }
  *     }
  *   ]
  * }
  *
- * The invitation code is treated as a bearer credential.
- * The server never trusts guest IDs without verifying that
- * they belong to the supplied invitation.
+ * Dinner and evening are deliberately handled separately.
+ * Dietary requirements are also stored separately per event part.
  * ------------------------------------------------------------
  */
 
@@ -195,7 +214,7 @@ async function handleRsvp(request, env) {
       {
         status: 405,
         headers: {
-          Allow: 'POST'
+          'Allow': 'POST'
         }
       }
     )
@@ -209,7 +228,7 @@ async function handleRsvp(request, env) {
     return Response.json(
       {
         ok: false,
-        error: 'Invalid request'
+        error: 'Invalid JSON'
       },
       {
         status: 400
@@ -217,31 +236,27 @@ async function handleRsvp(request, env) {
     )
   }
 
-  const rawCode = body?.code
+  const code = typeof body?.code === 'string'
+    ? body.code.trim().toUpperCase()
+    : ''
 
-  if (typeof rawCode !== 'string') {
+  if (!/^MG-[A-Z0-9]{6}$/.test(code)) {
     return Response.json(
       {
         ok: false,
         error: 'Invalid invitation'
       },
       {
-        status: 400
+        status: 404
       }
     )
   }
 
-  const code = rawCode.trim().toUpperCase()
-
-  if (!/^MG-[A-Z0-9]{6}$/.test(code)) {
-    return invalidInvitationResponse()
-  }
-
-  if (!Array.isArray(body.guests) || body.guests.length === 0) {
+  if (!Array.isArray(body?.guests) || body.guests.length === 0) {
     return Response.json(
       {
         ok: false,
-        error: 'No guests supplied'
+        error: 'Invalid guest data'
       },
       {
         status: 400
@@ -251,9 +266,9 @@ async function handleRsvp(request, env) {
 
   try {
     /*
-     * --------------------------------------------------------
-     * Resolve invitation
-     * --------------------------------------------------------
+     * ----------------------------------------------------------
+     * Validate invitation
+     * ----------------------------------------------------------
      */
 
     const invitation = await env.margo_glenn_wedding_db
@@ -269,78 +284,22 @@ async function handleRsvp(request, env) {
       .first()
 
     if (!invitation || invitation.active !== 1) {
-      return invalidInvitationResponse()
-    }
-
-    /*
-     * --------------------------------------------------------
-     * Load actual guests belonging to invitation.
-     * --------------------------------------------------------
-     */
-
-    const guestResult = await env.margo_glenn_wedding_db
-      .prepare(`
-        SELECT
-          id,
-          invited_to_dinner,
-          invited_to_evening,
-          dinner_rsvp_status,
-          evening_rsvp_status
-        FROM guests
-        WHERE invitation_id = ?
-        ORDER BY id
-      `)
-      .bind(invitation.id)
-      .all()
-
-    const guestsById = new Map(
-      guestResult.results.map((guest) => [guest.id, guest])
-    )
-
-    /*
-     * Never allow the client to submit guests belonging
-     * to another invitation.
-     */
-
-    for (const submittedGuest of body.guests) {
-      if (
-        !Number.isInteger(submittedGuest?.id) ||
-        !guestsById.has(submittedGuest.id)
-      ) {
-        return Response.json(
-          {
-            ok: false,
-            error: 'Invalid guest'
-          },
-          {
-            status: 400
-          }
-        )
-      }
-    }
-
-    /*
-     * Prevent duplicate guest IDs in one submission.
-     */
-
-    const submittedIds = body.guests.map((guest) => guest.id)
-
-    if (new Set(submittedIds).size !== submittedIds.length) {
       return Response.json(
         {
           ok: false,
-          error: 'Duplicate guest'
+          error: 'Invalid invitation'
         },
         {
-          status: 400
+          status: 404
         }
       )
     }
 
+
     /*
-     * --------------------------------------------------------
-     * Load wedding deadlines.
-     * --------------------------------------------------------
+     * ----------------------------------------------------------
+     * Validate deadlines
+     * ----------------------------------------------------------
      */
 
     const settings = await env.margo_glenn_wedding_db
@@ -358,7 +317,7 @@ async function handleRsvp(request, env) {
       return Response.json(
         {
           ok: false,
-          error: 'Wedding settings unavailable'
+          error: 'RSVP settings unavailable'
         },
         {
           status: 500
@@ -369,123 +328,162 @@ async function handleRsvp(request, env) {
     const now = new Date()
     const changeDeadline = new Date(settings.rsvp_change_deadline)
 
-    /*
-     * Once the change deadline has passed, guests can no longer
-     * modify their RSVP themselves.
-     */
-
     if (now > changeDeadline) {
       return Response.json(
         {
           ok: false,
-          error: 'RSVP changes are closed'
+          error: 'RSVP deadline has passed'
         },
         {
-          status: 403
+          status: 400
         }
       )
     }
 
+
     /*
-     * --------------------------------------------------------
-     * Validate every guest submission before writing anything.
-     * --------------------------------------------------------
+     * ----------------------------------------------------------
+     * Load guests belonging to invitation
+     * ----------------------------------------------------------
      */
 
-    const allowedDietaryCategories = new Set([
-      'vegetarian',
-      'vegan',
-      'gluten',
-      'lactose',
-      'nuts',
-      'shellfish',
-      'fish',
-      'other'
-    ])
+    const guestResult = await env.margo_glenn_wedding_db
+      .prepare(`
+        SELECT
+          id,
+          invited_to_dinner,
+          invited_to_evening
+        FROM guests
+        WHERE invitation_id = ?
+        ORDER BY id
+      `)
+      .bind(invitation.id)
+      .all()
 
-    const allowedOtherTypes = new Set([
-      'preference',
-      'allergy'
-    ])
+    const guestsById = new Map(
+      guestResult.results.map((guest) => [
+        guest.id,
+        guest
+      ])
+    )
+
+
+    /*
+     * ----------------------------------------------------------
+     * Validate submitted guests
+     * ----------------------------------------------------------
+     */
+
+    const submittedGuestIds = new Set()
 
     for (const submittedGuest of body.guests) {
-      const guest = guestsById.get(submittedGuest.id)
+      const guestId = Number(submittedGuest?.id)
 
-      /*
-       * Dinner RSVP
-       */
-
-      if (submittedGuest.dinner !== undefined) {
-        if (!guest.invited_to_dinner) {
-          return Response.json(
-            {
-              ok: false,
-              error: 'Guest is not invited to dinner'
-            },
-            {
-              status: 400
-            }
-          )
-        }
-
-        if (!['attending', 'declined'].includes(submittedGuest.dinner)) {
-          return Response.json(
-            {
-              ok: false,
-              error: 'Invalid dinner RSVP'
-            },
-            {
-              status: 400
-            }
-          )
-        }
+      if (!Number.isInteger(guestId)) {
+        return Response.json(
+          {
+            ok: false,
+            error: 'Invalid guest'
+          },
+          {
+            status: 400
+          }
+        )
       }
 
-      /*
-       * Evening RSVP
-       */
-
-      if (submittedGuest.evening !== undefined) {
-        if (!guest.invited_to_evening) {
-          return Response.json(
-            {
-              ok: false,
-              error: 'Guest is not invited to evening party'
-            },
-            {
-              status: 400
-            }
-          )
-        }
-
-        if (!['attending', 'declined'].includes(submittedGuest.evening)) {
-          return Response.json(
-            {
-              ok: false,
-              error: 'Invalid evening RSVP'
-            },
-            {
-              status: 400
-            }
-          )
-        }
+      if (submittedGuestIds.has(guestId)) {
+        return Response.json(
+          {
+            ok: false,
+            error: 'Duplicate guest'
+          },
+          {
+            status: 400
+          }
+        )
       }
 
+      submittedGuestIds.add(guestId)
+
+      const guest = guestsById.get(guestId)
+
+      if (!guest) {
+        return Response.json(
+          {
+            ok: false,
+            error: 'Invalid guest'
+          },
+          {
+            status: 400
+          }
+        )
+      }
+
+
       /*
-       * Dietary requirements
+       * --------------------------------------------------------
+       * Validate dinner
+       * --------------------------------------------------------
        */
 
-      if (submittedGuest.dietary !== undefined) {
-        const dietary = submittedGuest.dietary
+      if (guest.invited_to_dinner === 1) {
+        const dinner = submittedGuest.dinner
 
-        if (
-          dietary === null ||
-          typeof dietary !== 'object'
-        ) {
+        if (!dinner || !['attending', 'declined'].includes(dinner.status)) {
           return Response.json(
             {
               ok: false,
-              error: 'Invalid dietary information'
+              error: 'Dinner RSVP is required'
+            },
+            {
+              status: 400
+            }
+          )
+
+        }
+
+        const dietaryError = validateDietaryRequirements(
+          dinner.dietaryRequirements
+        )
+
+        if (dietaryError) {
+          return Response.json(
+            {
+              ok: false,
+              error: dietaryError
+            },
+            {
+              status: 400
+            }
+          )
+        }
+      } else if (submittedGuest.dinner !== undefined) {
+        return Response.json(
+          {
+            ok: false,
+            error: 'Guest is not invited to dinner'
+          },
+          {
+            status: 400
+          }
+        )
+      }
+
+
+      /*
+       * --------------------------------------------------------
+       * Validate evening
+       * --------------------------------------------------------
+       */
+
+      if (guest.invited_to_evening === 1) {
+        const evening = submittedGuest.evening
+
+        if (!evening || !['attending', 'declined'].includes(evening.status)) {
+          return Response.json(
+            {
+              ok: false,
+              error: 'Evening RSVP is required'
             },
             {
               status: 400
@@ -493,193 +491,113 @@ async function handleRsvp(request, env) {
           )
         }
 
-        for (const eventPart of ['dinner', 'evening']) {
-          if (dietary[eventPart] === undefined) {
-            continue
-          }
+        const dietaryError = validateDietaryRequirements(
+          evening.dietaryRequirements
+        )
 
-          if (!Array.isArray(dietary[eventPart])) {
-            return Response.json(
-              {
-                ok: false,
-                error: `Invalid dietary information for ${eventPart}`
-              },
-              {
-                status: 400
-              }
-            )
-          }
-
-          /*
-           * A guest may select each category only once.
-           */
-
-          const categories = dietary[eventPart].map(
-            (item) => item?.category
+        if (dietaryError) {
+          return Response.json(
+            {
+              ok: false,
+              error: dietaryError
+            },
+            {
+              status: 400
+            }
           )
-
-          if (new Set(categories).size !== categories.length) {
-            return Response.json(
-              {
-                ok: false,
-                error: `Duplicate dietary category for ${eventPart}`
-              },
-              {
-                status: 400
-              }
-            )
-          }
-
-          for (const item of dietary[eventPart]) {
-            if (!allowedDietaryCategories.has(item?.category)) {
-              return Response.json(
-                {
-                  ok: false,
-                  error: 'Invalid dietary category'
-                },
-                {
-                  status: 400
-                }
-              )
-            }
-
-            if (item.category === 'other') {
-              if (
-                !allowedOtherTypes.has(item?.otherType) ||
-                typeof item?.otherText !== 'string' ||
-                item.otherText.trim().length === 0
-              ) {
-                return Response.json(
-                  {
-                    ok: false,
-                    error: 'Invalid other dietary requirement'
-                  },
-                  {
-                    status: 400
-                  }
-                )
-              }
-            } else {
-              if (
-                item?.otherType !== undefined ||
-                item?.otherText !== undefined
-              ) {
-                return Response.json(
-                  {
-                    ok: false,
-                    error: 'Invalid dietary information'
-                  },
-                  {
-                    status: 400
-                  }
-                )
-              }
-            }
-          }
         }
+      } else if (submittedGuest.evening !== undefined) {
+        return Response.json(
+          {
+            ok: false,
+            error: 'Guest is not invited to evening'
+          },
+          {
+            status: 400
+          }
+        )
       }
     }
 
+
     /*
-     * --------------------------------------------------------
-     * Write RSVP data.
-     * --------------------------------------------------------
-     *
-     * We deliberately update only the supplied guests.
-     * This makes the API suitable for both one-person and
-     * multi-person invitations.
-     * --------------------------------------------------------
+     * ----------------------------------------------------------
+     * Require every invited guest to be included
+     * ----------------------------------------------------------
      */
 
+    for (const guest of guestResult.results) {
+      if (!submittedGuestIds.has(guest.id)) {
+        return Response.json(
+          {
+            ok: false,
+            error: 'All invited guests must be included'
+          },
+          {
+            status: 400
+          }
+        )
+      }
+    }
+
+
+    /*
+     * ----------------------------------------------------------
+     * Save everything atomically
+     * ----------------------------------------------------------
+     */
+
+    const statements = []
+
     for (const submittedGuest of body.guests) {
-      const guest = guestsById.get(submittedGuest.id)
+      const guestId = Number(submittedGuest.id)
+      const guest = guestsById.get(guestId)
 
-      if (submittedGuest.dinner !== undefined) {
-        await env.margo_glenn_wedding_db
-          .prepare(`
-            UPDATE guests
-            SET
-              dinner_rsvp_status = ?,
-              updated_at = CURRENT_TIMESTAMP
-            WHERE id = ?
-              AND invitation_id = ?
-          `)
-          .bind(
-            submittedGuest.dinner,
-            submittedGuest.id,
-            invitation.id
-          )
-          .run()
-
-        await env.margo_glenn_wedding_db
-          .prepare(`
-            INSERT INTO rsvp_responses (
-              guest_id,
-              status
+      if (guest.invited_to_dinner === 1) {
+        statements.push(
+          env.margo_glenn_wedding_db
+            .prepare(`
+              UPDATE guests
+              SET
+                dinner_rsvp_status = ?,
+                updated_at = CURRENT_TIMESTAMP
+              WHERE id = ?
+            `)
+            .bind(
+              submittedGuest.dinner.status,
+              guestId
             )
-            VALUES (?, ?)
-          `)
-          .bind(
-            submittedGuest.id,
-            submittedGuest.dinner
-          )
-          .run()
-      }
+        )
 
-      if (submittedGuest.evening !== undefined) {
-        await env.margo_glenn_wedding_db
-          .prepare(`
-            UPDATE guests
-            SET
-              evening_rsvp_status = ?,
-              updated_at = CURRENT_TIMESTAMP
-            WHERE id = ?
-              AND invitation_id = ?
-          `)
-          .bind(
-            submittedGuest.evening,
-            submittedGuest.id,
-            invitation.id
-          )
-          .run()
-
-        await env.margo_glenn_wedding_db
-          .prepare(`
-            INSERT INTO rsvp_responses (
-              guest_id,
-              status
+        statements.push(
+          env.margo_glenn_wedding_db
+            .prepare(`
+              INSERT INTO rsvp_responses (
+                guest_id,
+                status,
+                event_part
+              )
+              VALUES (?, ?, 'dinner')
+            `)
+            .bind(
+              guestId,
+              submittedGuest.dinner.status
             )
-            VALUES (?, ?)
-          `)
-          .bind(
-            submittedGuest.id,
-            submittedGuest.evening
-          )
-          .run()
-      }
+        )
 
-      /*
-       * Replace dietary requirements for the supplied guest.
-       *
-       * This means editing an RSVP also edits the catering
-       * information cleanly.
-       */
+        statements.push(
+          env.margo_glenn_wedding_db
+            .prepare(`
+              DELETE FROM guest_dietary_requirements
+              WHERE guest_id = ?
+                AND event_part = 'dinner'
+            `)
+            .bind(guestId)
+        )
 
-      if (submittedGuest.dietary !== undefined) {
-        await env.margo_glenn_wedding_db
-          .prepare(`
-            DELETE FROM guest_dietary_requirements
-            WHERE guest_id = ?
-          `)
-          .bind(submittedGuest.id)
-          .run()
-
-        for (const eventPart of ['dinner', 'evening']) {
-          const requirements =
-            submittedGuest.dietary[eventPart] ?? []
-
-          for (const requirement of requirements) {
-            await env.margo_glenn_wedding_db
+        for (const requirement of submittedGuest.dinner.dietaryRequirements || []) {
+          statements.push(
+            env.margo_glenn_wedding_db
               .prepare(`
                 INSERT INTO guest_dietary_requirements (
                   guest_id,
@@ -688,20 +606,100 @@ async function handleRsvp(request, env) {
                   other_type,
                   other_text
                 )
-                VALUES (?, ?, ?, ?, ?)
+                VALUES (?, 'dinner', ?, ?, ?)
               `)
               .bind(
-                submittedGuest.id,
-                eventPart,
+                guestId,
                 requirement.category,
                 requirement.otherType ?? null,
-                requirement.otherText?.trim() ?? null
+                requirement.otherText ?? null
               )
-              .run()
-          }
+          )
+        }
+      }
+
+
+      if (guest.invited_to_evening === 1) {
+        statements.push(
+          env.margo_glenn_wedding_db
+            .prepare(`
+              UPDATE guests
+              SET
+                evening_rsvp_status = ?,
+                updated_at = CURRENT_TIMESTAMP
+              WHERE id = ?
+            `)
+            .bind(
+              submittedGuest.evening.status,
+              guestId
+            )
+        )
+
+        statements.push(
+          env.margo_glenn_wedding_db
+            .prepare(`
+              INSERT INTO rsvp_responses (
+                guest_id,
+                status,
+                event_part
+              )
+              VALUES (?, ?, 'evening')
+            `)
+            .bind(
+              guestId,
+              submittedGuest.evening.status
+            )
+        )
+
+        statements.push(
+          env.margo_glenn_wedding_db
+            .prepare(`
+              DELETE FROM guest_dietary_requirements
+              WHERE guest_id = ?
+                AND event_part = 'evening'
+            `)
+            .bind(guestId)
+        )
+
+        for (const requirement of submittedGuest.evening.dietaryRequirements || []) {
+          statements.push(
+            env.margo_glenn_wedding_db
+              .prepare(`
+                INSERT INTO guest_dietary_requirements (
+                  guest_id,
+                  event_part,
+                  category,
+                  other_type,
+                  other_text
+                )
+              VALUES (?, 'evening', ?, ?, ?)
+              `)
+              .bind(
+                guestId,
+                requirement.category,
+                requirement.otherType ?? null,
+                requirement.otherText ?? null
+              )
+          )
         }
       }
     }
+
+
+    /*
+     * ----------------------------------------------------------
+     * Execute transaction
+     * ----------------------------------------------------------
+     */
+
+    await env.margo_glenn_wedding_db.batch(statements)
+
+
+    /*
+     * ----------------------------------------------------------
+     * Success
+     * ----------------------------------------------------------
+     */
 
     return Response.json({
       ok: true
@@ -724,18 +722,73 @@ async function handleRsvp(request, env) {
 
 /*
  * ------------------------------------------------------------
- * Helpers
+ * Dietary requirement validation
  * ------------------------------------------------------------
  */
 
-function invalidInvitationResponse() {
-  return Response.json(
-    {
-      ok: false,
-      error: 'Invalid invitation'
-    },
-    {
-      status: 404
+function validateDietaryRequirements(requirements) {
+  if (requirements === undefined) {
+    return null
+  }
+
+  if (!Array.isArray(requirements)) {
+    return 'Invalid dietary requirements'
+  }
+
+  const allowedCategories = new Set([
+    'vegetarian',
+    'vegan',
+    'gluten',
+    'lactose',
+    'nuts',
+    'shellfish',
+    'fish',
+    'other'
+  ])
+
+  const seenCategories = new Set()
+
+  for (const requirement of requirements) {
+    if (!requirement || typeof requirement !== 'object') {
+      return 'Invalid dietary requirement'
     }
-  )
+
+    const category = requirement.category
+
+    if (!allowedCategories.has(category)) {
+      return 'Invalid dietary requirement category'
+    }
+
+    if (seenCategories.has(category)) {
+      return 'Duplicate dietary requirement'
+    }
+
+    seenCategories.add(category)
+
+    if (category === 'other') {
+      if (
+        !['preference', 'allergy'].includes(requirement.otherType) ||
+        typeof requirement.otherText !== 'string' ||
+        requirement.otherText.trim().length === 0
+      ) {
+        return 'Other dietary requirement requires a type and description'
+      }
+    } else {
+      if (
+        requirement.otherType !== undefined &&
+        requirement.otherType !== null
+      ) {
+        return 'Invalid dietary requirement'
+      }
+
+      if (
+        requirement.otherText !== undefined &&
+        requirement.otherText !== null
+      ) {
+        return 'Invalid dietary requirement'
+      }
+    }
+  }
+
+  return null
 }
