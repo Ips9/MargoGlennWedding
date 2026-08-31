@@ -14,7 +14,7 @@ function createCalendarFile() {
     'DTSTAMP:20260831T000000Z',
     'DTSTART;VALUE=DATE:20271002',
     'DTEND;VALUE=DATE:20271003',
-    'SUMMARY:Margo & Glenn â€” Onze trouwdag',
+    'SUMMARY:Margo & Glenn — Onze trouwdag',
     'LOCATION:Hottentot Hoeve\\, Cassenbroek 1\\, 2820 Bonheiden',
     'DESCRIPTION:Onze trouwdag van Margo & Glenn.',
     'END:VEVENT',
@@ -43,7 +43,7 @@ function formatCountdown() {
   const difference = weddingDate - now
 
   if (difference <= 0) {
-    return 'Vandaag is onze dag â'
+    return 'Vandaag is onze dag ❤️'
   }
 
   const days = Math.floor(
@@ -58,7 +58,7 @@ function formatCountdown() {
     (difference / (1000 * 60)) % 60
   )
 
-  return `${days} dagen Â· ${hours} uur Â· ${minutes} minuten`
+  return `${days} dagen · ${hours} uur · ${minutes} minuten`
 }
 
 document.querySelector('#app').innerHTML = `
@@ -78,12 +78,12 @@ document.querySelector('#app').innerHTML = `
         <img
           class="wedding-logo"
           src="/logo.png"
-          alt="Margo & Glenn â€” 2 oktober 2027"
+          alt="Margo & Glenn — 2 oktober 2027"
         />
 
         <div class="hero-divider">
           <span></span>
-          <span class="heart">â™¡</span>
+          <span class="heart">♡</span>
           <span></span>
         </div>
 
@@ -101,6 +101,7 @@ document.querySelector('#app').innerHTML = `
 
         <div class="hero-actions">
 
+          <!-- RSVP verwijst naar de juiste RSVP-sectie -->
           <a href="#rsvp" class="button button-primary">
             RSVP
           </a>
@@ -127,7 +128,7 @@ document.querySelector('#app').innerHTML = `
 
       <div class="section-heading">
 
-        <p class="eyebrow">02 Â· 10 Â· 2027</p>
+        <p class="eyebrow">02 · 10 · 2027</p>
 
         <h2>Onze dag</h2>
 
@@ -153,7 +154,7 @@ document.querySelector('#app').innerHTML = `
 
         <article class="detail-card">
 
-          <div class="detail-icon">â™¡</div>
+          <div class="detail-icon">♡</div>
 
           <h3>Wanneer</h3>
 
@@ -169,7 +170,7 @@ document.querySelector('#app').innerHTML = `
 
         <article class="detail-card">
 
-          <div class="detail-icon">âŒ–</div>
+          <div class="detail-icon">⌖</div>
 
           <h3>Waar</h3>
 
@@ -185,7 +186,7 @@ document.querySelector('#app').innerHTML = `
             target="_blank"
             rel="noopener noreferrer"
           >
-            Bekijk de locatie â†’
+            Bekijk de locatie →
           </a>
 
         </article>
@@ -215,7 +216,7 @@ document.querySelector('#app').innerHTML = `
 
           <span></span>
 
-          <span class="heart">â™¡</span>
+          <span class="heart">♡</span>
 
           <span></span>
 
@@ -236,7 +237,7 @@ document.querySelector('#app').innerHTML = `
 
         <p class="eyebrow">Praktisch</p>
 
-        <h2>Alle details op Ã©Ã©n plek</h2>
+        <h2>Alle details op één plek</h2>
 
         <div class="small-line"></div>
 
@@ -249,7 +250,7 @@ document.querySelector('#app').innerHTML = `
 
         <div class="practical-item">
 
-          <h3>ðŸ“ Locatie</h3>
+          <h3>📍 Locatie</h3>
 
           <p>
             <strong>Hottentot Hoeve</strong><br />
@@ -273,7 +274,7 @@ document.querySelector('#app').innerHTML = `
 
         <div class="practical-item">
 
-          <h3>ðŸ“… Kalender</h3>
+          <h3>📅 Kalender</h3>
 
           <p>
             Zet onze trouwdag alvast in je agenda
@@ -290,7 +291,7 @@ document.querySelector('#app').innerHTML = `
               aria-label="Voeg toe aan kalender"
               title="Voeg toe aan kalender"
             >
-              ðŸ“…
+              📅
             </button>
 
             <button
@@ -331,7 +332,7 @@ document.querySelector('#app').innerHTML = `
               onclick="createCalendarFile()"
             >
               <span class="calendar-provider-icon apple-calendar-icon">
-                ï£¿
+                
               </span>
             </button>
 
@@ -365,109 +366,53 @@ document.querySelector('#app').innerHTML = `
 
         <div id="rsvp-app">
 
-          <!-- =========================
-               PERSOONLIJKE UITNODIGING
-          ========================== -->
+          <div class="rsvp-code-form">
 
-          <div class="invitation-card" id="invitationCard">
+            <p>
+              Vul je persoonlijke uitnodigingscode in om je RSVP te openen.
+            </p>
 
-            <div class="invitation-card-inner">
+            <form id="invitationForm">
 
-              <div class="invitation-card-decoration">
-                ♡
+              <label for="invitationCode">
+                Uitnodigingscode
+              </label>
+
+              <div class="rsvp-code-row">
+
+                <input
+                  id="invitationCode"
+                  name="invitationCode"
+                  type="text"
+                  placeholder="MG-XXXXXX"
+                  autocomplete="off"
+                  maxlength="9"
+                  required
+                />
+
+                <button
+                  type="submit"
+                  class="button button-primary"
+                >
+                  Open uitnodiging
+                </button>
+
               </div>
 
-              <p class="eyebrow">
-                Onze persoonlijke uitnodiging
-              </p>
-
-              <h3>
-                Voor jullie
-              </h3>
-
-              <p class="invitation-card-intro">
-                Open hieronder je persoonlijke uitnodiging
-                met de code die je van ons kreeg.
-              </p>
-
-              <button
-                type="button"
-                id="openInvitationButton"
-                class="button button-primary"
-              >
-                Open mijn uitnodiging
-              </button>
-
-
-              <!-- CODE FORMULIER -->
-
-              <div
-                id="invitation-code-panel"
-                class="invitation-code-panel"
+              <p
+                id="invitationError"
+                class="rsvp-message rsvp-error"
                 hidden
-              >
+              ></p>
 
-                <div class="invitation-card-divider">
-
-                  <span></span>
-
-                  <span>♡</span>
-
-                  <span></span>
-
-                </div>
-
-                <p class="invitation-code-label">
-                  Persoonlijke uitnodigingscode
-                </p>
-
-                <form id="invitationForm">
-
-                  <div class="rsvp-code-row">
-
-                    <input
-                      id="invitationCode"
-                      name="invitationCode"
-                      type="text"
-                      placeholder="MG-XXXXXX"
-                      autocomplete="off"
-                      maxlength="9"
-                      required
-                    />
-
-                    <button
-                      type="submit"
-                      class="button button-primary"
-                    >
-                      Open uitnodiging
-                    </button>
-
-                  </div>
-
-                  <p
-                    id="invitationError"
-                    class="rsvp-message rsvp-error"
-                    hidden
-                  ></p>
-
-                </form>
-
-              </div>
-
-            </div>
+            </form>
 
           </div>
-
-
-          <!-- RSVP FORM -->
 
           <div
             id="rsvp-form-container"
             hidden
           ></div>
-
-
-          <!-- SUCCESS -->
 
           <div
             id="rsvp-success"
@@ -488,13 +433,11 @@ document.querySelector('#app').innerHTML = `
 
     <footer>
 
-      <div class="footer-decoration">
-        âœ¦
-      </div>
+      <div class="footer-decoration">✦</div>
 
-      <p>
-        02 Â· 10 Â· 2027
-      </p>
+      
+
+      <p>02 · 10 · 2027</p>
 
       <span class="footer-line"></span>
 
@@ -509,59 +452,18 @@ document.querySelector('#app').innerHTML = `
 
 
 /* =========================
-   INVITATION CARD
-========================= */
-
-document
-  .querySelector('#openInvitationButton')
-  .addEventListener('click', () => {
-
-    const panel = document.querySelector(
-      '#invitation-code-panel'
-    )
-
-    const button = document.querySelector(
-      '#openInvitationButton'
-    )
-
-    panel.hidden = false
-
-    button.hidden = true
-
-    requestAnimationFrame(() => {
-      panel.classList.add('is-open')
-    })
-
-    setTimeout(() => {
-      document
-        .querySelector('#invitationCode')
-        ?.focus()
-    }, 150)
-  })
-
-
-/* =========================
-   RSVP / INVITATION
+   EVENT LISTENERS
 ========================= */
 
 async function loadInvitation(code) {
-
-  const errorElement = document.querySelector(
-    '#invitationError'
-  )
-
-  const formContainer = document.querySelector(
-    '#rsvp-form-container'
-  )
+  const errorElement = document.querySelector('#invitationError')
+  const formContainer = document.querySelector('#rsvp-form-container')
 
   errorElement.hidden = true
-
   formContainer.hidden = true
-
   formContainer.innerHTML = ''
 
   try {
-
     const response = await fetch(
       `/api/invitation?code=${encodeURIComponent(code)}`
     )
@@ -569,30 +471,22 @@ async function loadInvitation(code) {
     const data = await response.json()
 
     if (!response.ok || !data.ok) {
-      throw new Error(
-        data.error || 'Ongeldige uitnodiging'
-      )
+      throw new Error(data.error || 'Ongeldige uitnodiging')
     }
 
     renderRsvpForm(code, data.guests)
 
   } catch (error) {
-
     errorElement.textContent =
-      error.message ||
-      'Er ging iets mis. Probeer opnieuw.'
+      error.message || 'Er ging iets mis. Probeer opnieuw.'
 
     errorElement.hidden = false
-
   }
 }
 
 
 function renderRsvpForm(code, guests) {
-
-  const formContainer = document.querySelector(
-    '#rsvp-form-container'
-  )
+  const formContainer = document.querySelector('#rsvp-form-container')
 
   formContainer.innerHTML = `
     <form id="rsvpForm">
@@ -611,108 +505,72 @@ function renderRsvpForm(code, guests) {
       </p>
 
       ${guests.map((guest) => `
+        <div class="rsvp-guest" data-guest-id="${guest.id}">
 
-        <div
-          class="rsvp-guest"
-          data-guest-id="${guest.id}"
-        >
-
-          <h4>
-            ${escapeHtml(guest.name)}
-          </h4>
-
+          <h4>${escapeHtml(guest.name)}</h4>
 
           ${guest.invitedToDinner ? `
-
             <div class="rsvp-event">
 
               <h5>Diner</h5>
 
               <label>
-
                 <input
                   type="radio"
                   name="dinner-${guest.id}"
                   value="attending"
-                  ${guest.dinnerRsvpStatus === 'attending'
-                    ? 'checked'
-                    : ''}
+                  ${guest.dinnerRsvpStatus === 'attending' ? 'checked' : ''}
                   required
                 />
-
                 Ja, ik kom
-
               </label>
 
-
               <label>
-
                 <input
                   type="radio"
                   name="dinner-${guest.id}"
                   value="declined"
-                  ${guest.dinnerRsvpStatus === 'declined'
-                    ? 'checked'
-                    : ''}
+                  ${guest.dinnerRsvpStatus === 'declined' ? 'checked' : ''}
                   required
                 />
-
                 Nee, ik kom niet
-
               </label>
 
             </div>
-
           ` : ''}
 
-
           ${guest.invitedToEvening ? `
-
             <div class="rsvp-event">
 
               <h5>Avondfeest</h5>
 
               <label>
-
                 <input
                   type="radio"
                   name="evening-${guest.id}"
                   value="attending"
-                  ${guest.eveningRsvpStatus === 'attending'
-                    ? 'checked'
-                    : ''}
+                  ${guest.eveningRsvpStatus === 'attending' ? 'checked' : ''}
                   required
                 />
-
                 Ja, ik kom
-
               </label>
 
-
               <label>
-
                 <input
                   type="radio"
                   name="evening-${guest.id}"
                   value="declined"
-                  ${guest.eveningRsvpStatus === 'declined'
-                    ? 'checked'
-                    : ''}
+                  ${guest.eveningRsvpStatus === 'declined' ? 'checked' : ''}
                   required
                 />
-
                 Nee, ik kom niet
-
               </label>
 
             </div>
-
           ` : ''}
 
         </div>
-
       `).join('')}
-
 
       <button
         type="submit"
@@ -728,214 +586,113 @@ function renderRsvpForm(code, guests) {
 
   document
     .querySelector('#rsvpForm')
-    .addEventListener(
-      'submit',
-      handleRsvpSubmit
-    )
+    .addEventListener('submit', handleRsvpSubmit)
 }
 
 
 async function handleRsvpSubmit(event) {
-
   event.preventDefault()
 
   const form = event.currentTarget
-
-  const code =
-    document.querySelector('#rsvpCode').value
-
-  const guests = [
-    ...form.querySelectorAll('.rsvp-guest')
-  ]
-
+  const code = document.querySelector('#rsvpCode').value
+  const guests = [...form.querySelectorAll('.rsvp-guest')]
 
   const payload = {
-
     code,
-
     guests: guests.map((guestElement) => {
-
       const guestId = Number(
         guestElement.dataset.guestId
       )
 
+      const dinner = guestElement.querySelector(
+        `input[name="dinner-${guestId}"]:checked`
+      )
 
-      const dinner =
-        guestElement.querySelector(
-          `input[name="dinner-${guestId}"]:checked`
-        )
-
-
-      const evening =
-        guestElement.querySelector(
-          `input[name="evening-${guestId}"]:checked`
-        )
-
+      const evening = guestElement.querySelector(
+        `input[name="evening-${guestId}"]:checked`
+      )
 
       return {
-
         id: guestId,
-
         dinnerRsvpStatus: dinner
           ? dinner.value
           : 'declined',
-
         eveningRsvpStatus: evening
           ? evening.value
           : 'declined',
-
         dinnerDietaryRequirements: [],
-
         eveningDietaryRequirements: []
-
       }
-
     })
-
   }
 
-
   try {
-
-    const response = await fetch(
-      '/api/rsvp',
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(payload)
-      }
-    )
-
+    const response = await fetch('/api/rsvp', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(payload)
+    })
 
     const data = await response.json()
 
-
     if (!response.ok || !data.ok) {
-
-      throw new Error(
-        data.error ||
-        'RSVP kon niet worden opgeslagen'
-      )
-
+      throw new Error(data.error || 'RSVP kon niet worden opgeslagen')
     }
 
+    document.querySelector('#rsvp-form-container').hidden = true
 
-    document
-      .querySelector('#rsvp-form-container')
-      .hidden = true
-
-
-    const success =
-      document.querySelector('#rsvp-success')
-
+    const success = document.querySelector('#rsvp-success')
 
     success.textContent =
       'Bedankt! Jullie RSVP werd succesvol opgeslagen.'
 
-
     success.hidden = false
 
-
   } catch (error) {
-
-    const errorElement =
-      document.querySelector('#invitationError')
-
+    const errorElement = document.querySelector('#invitationError')
 
     errorElement.textContent =
-      error.message ||
-      'Er ging iets mis bij het opslaan.'
-
+      error.message || 'Er ging iets mis bij het opslaan.'
 
     errorElement.hidden = false
-
   }
 }
 
 
-/* =========================
-   HTML ESCAPING
-========================= */
-
 function escapeHtml(value) {
-
   return String(value)
-
-    .replaceAll(
-      '&',
-      '&amp;'
-    )
-
-    .replaceAll(
-      '<',
-      '&lt;'
-    )
-
-    .replaceAll(
-      '>',
-      '&gt;'
-    )
-
-    .replaceAll(
-      '"',
-      '&quot;'
-    )
-
-    .replaceAll(
-      "'",
-      '&#039;'
-    )
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#039;')
 }
 
 
-/* =========================
-   INVITATION CODE
-========================= */
-
 document
   .querySelector('#invitationForm')
-  .addEventListener(
-    'submit',
-    (event) => {
+  .addEventListener('submit', (event) => {
+    event.preventDefault()
 
-      event.preventDefault()
+    const input = document.querySelector('#invitationCode')
 
-      const input =
-        document.querySelector(
-          '#invitationCode'
-        )
+    const code = input.value
+      .trim()
+      .toUpperCase()
 
-      const code =
-        input.value
-          .trim()
-          .toUpperCase()
+    loadInvitation(code)
+  })
 
-      loadInvitation(code)
-
-    }
-  )
-
-
-/* =========================
-   CALENDAR
-========================= */
 
 document
   .querySelector('#calendarButton')
-  .addEventListener(
-    'click',
-    createCalendarFile
-  )
-
+  .addEventListener('click', createCalendarFile)
 
 document
   .querySelector('#calendarButton2')
-  .addEventListener(
-    'click',
-    createCalendarFile
-  )
+  .addEventListener('click', createCalendarFile)
 
 
 /* =========================
@@ -943,22 +700,13 @@ document
 ========================= */
 
 function updateCountdown() {
-
-  const countdown =
-    document.querySelector('#countdown')
+  const countdown = document.querySelector('#countdown')
 
   if (countdown) {
-
-    countdown.textContent =
-      formatCountdown()
-
+    countdown.textContent = formatCountdown()
   }
 }
 
-
 updateCountdown()
 
-setInterval(
-  updateCountdown,
-  60000
-)
+setInterval(updateCountdown, 60000)
