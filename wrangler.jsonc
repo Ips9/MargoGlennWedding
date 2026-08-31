@@ -1,0 +1,24 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "margo-glenn-wedding",
+  "main": "./worker/index.js",
+  "compatibility_date": "2026-08-31",
+
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": [
+      "/api/*"
+    ]
+  },
+
+  "d1_databases": [
+    {
+      "binding": "margo_glenn_wedding_db",
+      "database_name": "margo-glenn-wedding-db",
+      "database_id": "82b35a74-ad2c-4229-b6c8-9c79a783ea62",
+      "remote": true
+    }
+  ]
+}
