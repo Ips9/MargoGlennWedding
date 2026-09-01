@@ -2,6 +2,20 @@ import './style.css'
 
 const weddingDate = new Date('2027-10-02T00:00:00')
 
+const calendarEvent = {
+  title: 'Margo & Glenn — Onze trouwdag',
+  location: 'Hottentot Hoeve, Cassenbroek 1, 2820 Bonheiden',
+  description: 'Onze trouwdag van Margo & Glenn.',
+  startDate: '20271002',
+  endDate: '20271003',
+  startDateTime: '2027-10-02T00:00:00',
+  endDateTime: '2027-10-03T00:00:00'
+}
+
+/* =========================
+   CALENDAR
+========================= */
+
 function createCalendarFile() {
   const event = [
     'BEGIN:VCALENDAR',
@@ -11,12 +25,12 @@ function createCalendarFile() {
     'METHOD:PUBLISH',
     'BEGIN:VEVENT',
     'UID:margo-glenn-2027-10-02@wedding',
-    'DTSTAMP:20260831T000000Z',
-    'DTSTART;VALUE=DATE:20271002',
-    'DTEND;VALUE=DATE:20271003',
-    'SUMMARY:Margo & Glenn â€” Onze trouwdag',
-    'LOCATION:Hottentot Hoeve\\, Cassenbroek 1\\, 2820 Bonheiden',
-    'DESCRIPTION:Onze trouwdag van Margo & Glenn.',
+    `DTSTAMP:${formatICSDate(new Date())}`,
+    `DTSTART;VALUE=DATE:${calendarEvent.startDate}`,
+    `DTEND;VALUE=DATE:${calendarEvent.endDate}`,
+    `SUMMARY:${escapeICS(calendarEvent.title)}`,
+    `LOCATION:${escapeICS(calendarEvent.location)}`,
+    `DESCRIPTION:${escapeICS(calendarEvent.description)}`,
     'END:VEVENT',
     'END:VCALENDAR'
   ].join('\r\n')
@@ -38,12 +52,35 @@ function createCalendarFile() {
   URL.revokeObjectURL(url)
 }
 
+function formatICSDate(date) {
+  const year = date.getUTCFullYear()
+  const month = String(date.getUTCMonth() + 1).padStart(2, '0')
+  const day = String(date.getUTCDate()).padStart(2, '0')
+  const hours = String(date.getUTCHours()).padStart(2, '0')
+  const minutes = String(date.getUTCMinutes()).padStart(2, '0')
+  const seconds = String(date.getUTCSeconds()).padStart(2, '0')
+
+  return `${year}${month}${day}T${hours}${minutes}${seconds}Z`
+}
+
+function escapeICS(value) {
+  return String(value)
+    .replace(/\\/g, '\\\\')
+    .replace(/\r?\n/g, '\\n')
+    .replace(/;/g, '\\;')
+    .replace(/,/g, '\\,')
+}
+
+/* =========================
+   COUNTDOWN
+========================= */
+
 function formatCountdown() {
   const now = new Date()
   const difference = weddingDate - now
 
   if (difference <= 0) {
-    return 'Vandaag is onze dag â'
+    return 'Vandaag is onze dag ♡'
   }
 
   const days = Math.floor(
@@ -58,8 +95,44 @@ function formatCountdown() {
     (difference / (1000 * 60)) % 60
   )
 
-  return `${days} dagen Â· ${hours} uur Â· ${minutes} minuten`
+  return `${days} dagen · ${hours} uur · ${minutes} minuten`
 }
+
+/* =========================
+   GOOGLE CALENDAR
+========================= */
+
+function openGoogleCalendar() {
+  const url =
+    'https://calendar.google.com/calendar/render' +
+    '?action=TEMPLATE' +
+    `&text=${encodeURIComponent(calendarEvent.title)}` +
+    `&dates=${calendarEvent.startDate}/${calendarEvent.endDate}` +
+    `&location=${encodeURIComponent(calendarEvent.location)}` +
+    `&details=${encodeURIComponent(calendarEvent.description)}`
+
+  window.open(url, '_blank')
+}
+
+/* =========================
+   OUTLOOK CALENDAR
+========================= */
+
+function openOutlookCalendar() {
+  const url =
+    'https://outlook.live.com/calendar/0/deeplink/compose' +
+    `?subject=${encodeURIComponent(calendarEvent.title)}` +
+    `&startdt=${encodeURIComponent(calendarEvent.startDateTime)}` +
+    `&enddt=${encodeURIComponent(calendarEvent.endDateTime)}` +
+    `&location=${encodeURIComponent(calendarEvent.location)}` +
+    `&body=${encodeURIComponent(calendarEvent.description)}`
+
+  window.open(url, '_blank')
+}
+
+/* =========================
+   PAGE
+========================= */
 
 document.querySelector('#app').innerHTML = `
   <main class="site">
@@ -78,12 +151,12 @@ document.querySelector('#app').innerHTML = `
         <img
           class="wedding-logo"
           src="/logo.png"
-          alt="Margo & Glenn â€” 2 oktober 2027"
+          alt="Margo & Glenn — 2 oktober 2027"
         />
 
         <div class="hero-divider">
           <span></span>
-          <span class="heart">â™¡</span>
+          <span class="heart">♡</span>
           <span></span>
         </div>
 
@@ -108,6 +181,7 @@ document.querySelector('#app').innerHTML = `
           <button
             id="calendarButton"
             class="button button-secondary"
+            type="button"
           >
             Voeg toe aan kalender
           </button>
@@ -127,7 +201,7 @@ document.querySelector('#app').innerHTML = `
 
       <div class="section-heading">
 
-        <p class="eyebrow">02 Â· 10 Â· 2027</p>
+        <p class="eyebrow">02 · 10 · 2027</p>
 
         <h2>Onze dag</h2>
 
@@ -153,7 +227,7 @@ document.querySelector('#app').innerHTML = `
 
         <article class="detail-card">
 
-          <div class="detail-icon">â™¡</div>
+          <div class="detail-icon">♡</div>
 
           <h3>Wanneer</h3>
 
@@ -169,7 +243,7 @@ document.querySelector('#app').innerHTML = `
 
         <article class="detail-card">
 
-          <div class="detail-icon">âŒ–</div>
+          <div class="detail-icon">⌖</div>
 
           <h3>Waar</h3>
 
@@ -185,7 +259,7 @@ document.querySelector('#app').innerHTML = `
             target="_blank"
             rel="noopener noreferrer"
           >
-            Bekijk de locatie â†’
+            Bekijk de locatie →
           </a>
 
         </article>
@@ -215,7 +289,7 @@ document.querySelector('#app').innerHTML = `
 
           <span></span>
 
-          <span class="heart">â™¡</span>
+          <span class="heart">♡</span>
 
           <span></span>
 
@@ -236,7 +310,7 @@ document.querySelector('#app').innerHTML = `
 
         <p class="eyebrow">Praktisch</p>
 
-        <h2>Alle details op Ã©Ã©n plek</h2>
+        <h2>Alle details op één plek</h2>
 
         <div class="small-line"></div>
 
@@ -249,7 +323,7 @@ document.querySelector('#app').innerHTML = `
 
         <div class="practical-item">
 
-          <h3>ðŸ“ Locatie</h3>
+          <h3>📍 Locatie</h3>
 
           <p>
             <strong>Hottentot Hoeve</strong><br />
@@ -273,13 +347,12 @@ document.querySelector('#app').innerHTML = `
 
         <div class="practical-item">
 
-          <h3>ðŸ“… Kalender</h3>
+          <h3>📅 Kalender</h3>
 
           <p>
             Zet onze trouwdag alvast in je agenda
             zodat je hem zeker vrijhoudt.
           </p>
-
 
           <div class="calendar-buttons">
 
@@ -287,21 +360,18 @@ document.querySelector('#app').innerHTML = `
               id="calendarButton2"
               class="calendar-icon-button"
               type="button"
-              aria-label="Voeg toe aan kalender"
-              title="Voeg toe aan kalender"
+              aria-label="Download kalenderbestand"
+              title="Download kalenderbestand"
             >
-              ðŸ“…
+              📅
             </button>
 
             <button
+              id="googleCalendarButton"
               class="calendar-icon-button"
               type="button"
               aria-label="Google Calendar"
               title="Google Calendar"
-              onclick="window.open(
-                'https://calendar.google.com/calendar/render?action=TEMPLATE&text=Margo%20%26%20Glenn%20%E2%80%94%20Onze%20trouwdag&dates=20271002/20271003&location=Hottentot%20Hoeve%2C%20Cassenbroek%201%2C%202820%20Bonheiden&details=Onze%20trouwdag%20van%20Margo%20%26%20Glenn.',
-                '_blank'
-              )"
             >
               <span class="calendar-provider-icon google-calendar-icon">
                 G
@@ -309,14 +379,11 @@ document.querySelector('#app').innerHTML = `
             </button>
 
             <button
+              id="outlookCalendarButton"
               class="calendar-icon-button"
               type="button"
               aria-label="Outlook Calendar"
               title="Outlook Calendar"
-              onclick="window.open(
-                'https://outlook.live.com/calendar/0/deeplink/compose?subject=Margo%20%26%20Glenn%20%E2%80%94%20Onze%20trouwdag&startdt=2027-10-02T00%3A00%3A00&enddt=2027-10-03T00%3A00%3A00&location=Hottentot%20Hoeve%2C%20Cassenbroek%201%2C%202820%20Bonheiden&body=Onze%20trouwdag%20van%20Margo%20%26%20Glenn.',
-                '_blank'
-              )"
             >
               <span class="calendar-provider-icon outlook-calendar-icon">
                 O
@@ -324,18 +391,22 @@ document.querySelector('#app').innerHTML = `
             </button>
 
             <button
+              id="appleCalendarButton"
               class="calendar-icon-button"
               type="button"
               aria-label="Apple Calendar"
               title="Apple Calendar"
-              onclick="createCalendarFile()"
             >
               <span class="calendar-provider-icon apple-calendar-icon">
-                ï£¿
+                
               </span>
             </button>
 
           </div>
+
+          <p class="calendar-help">
+            📅 = kalenderbestand · G = Google · O = Outlook ·  = Apple
+          </p>
 
         </div>
 
@@ -365,9 +436,7 @@ document.querySelector('#app').innerHTML = `
 
         <div id="rsvp-app">
 
-          <!-- =========================
-               PERSOONLIJKE UITNODIGING
-          ========================== -->
+          <!-- PERSOONLIJKE UITNODIGING -->
 
           <div class="invitation-card" id="invitationCard">
 
@@ -489,11 +558,11 @@ document.querySelector('#app').innerHTML = `
     <footer>
 
       <div class="footer-decoration">
-        âœ¦
+        ✦
       </div>
 
       <p>
-        02 Â· 10 Â· 2027
+        02 · 10 · 2027
       </p>
 
       <span class="footer-line"></span>
@@ -525,7 +594,6 @@ document
     )
 
     panel.hidden = false
-
     button.hidden = true
 
     requestAnimationFrame(() => {
@@ -555,9 +623,7 @@ async function loadInvitation(code) {
   )
 
   errorElement.hidden = true
-
   formContainer.hidden = true
-
   formContainer.innerHTML = ''
 
   try {
@@ -583,7 +649,6 @@ async function loadInvitation(code) {
       'Er ging iets mis. Probeer opnieuw.'
 
     errorElement.hidden = false
-
   }
 }
 
@@ -919,7 +984,7 @@ document
 
 
 /* =========================
-   CALENDAR
+   CALENDAR BUTTONS
 ========================= */
 
 document
@@ -932,6 +997,30 @@ document
 
 document
   .querySelector('#calendarButton2')
+  .addEventListener(
+    'click',
+    createCalendarFile
+  )
+
+
+document
+  .querySelector('#googleCalendarButton')
+  .addEventListener(
+    'click',
+    openGoogleCalendar
+  )
+
+
+document
+  .querySelector('#outlookCalendarButton')
+  .addEventListener(
+    'click',
+    openOutlookCalendar
+  )
+
+
+document
+  .querySelector('#appleCalendarButton')
   .addEventListener(
     'click',
     createCalendarFile
