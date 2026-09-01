@@ -3,14 +3,15 @@ import './style.css'
 const weddingDate = new Date('2027-10-02T00:00:00')
 
 const calendarEvent = {
-  title: 'Margo & Glenn — Onze trouwdag',
+  title: 'Margo & Glenn \u2014 Onze trouwdag',
   location: 'Hottentot Hoeve, Cassenbroek 1, 2820 Bonheiden',
-  description: 'Onze trouwdag van Margo & Glenn.',
+  description: 'Trouwdag van Margo & Glenn.',
   startDate: '20271002',
   endDate: '20271003',
   startDateTime: '2027-10-02T00:00:00',
   endDateTime: '2027-10-03T00:00:00'
 }
+
 
 /* =========================
    CALENDAR
@@ -52,6 +53,7 @@ function createCalendarFile() {
   URL.revokeObjectURL(url)
 }
 
+
 function formatICSDate(date) {
   const year = date.getUTCFullYear()
   const month = String(date.getUTCMonth() + 1).padStart(2, '0')
@@ -63,6 +65,7 @@ function formatICSDate(date) {
   return `${year}${month}${day}T${hours}${minutes}${seconds}Z`
 }
 
+
 function escapeICS(value) {
   return String(value)
     .replace(/\\/g, '\\\\')
@@ -70,6 +73,7 @@ function escapeICS(value) {
     .replace(/;/g, '\\;')
     .replace(/,/g, '\\,')
 }
+
 
 /* =========================
    COUNTDOWN
@@ -80,7 +84,7 @@ function formatCountdown() {
   const difference = weddingDate - now
 
   if (difference <= 0) {
-    return 'Vandaag is onze dag ♡'
+    return 'Vandaag is onze dag \u2661'
   }
 
   const days = Math.floor(
@@ -95,8 +99,9 @@ function formatCountdown() {
     (difference / (1000 * 60)) % 60
   )
 
-  return `${days} dagen · ${hours} uur · ${minutes} minuten`
+  return `${days} dagen \u00b7 ${hours} uur \u00b7 ${minutes} minuten`
 }
+
 
 /* =========================
    GOOGLE CALENDAR
@@ -114,6 +119,7 @@ function openGoogleCalendar() {
   window.open(url, '_blank')
 }
 
+
 /* =========================
    OUTLOOK CALENDAR
 ========================= */
@@ -129,6 +135,7 @@ function openOutlookCalendar() {
 
   window.open(url, '_blank')
 }
+
 
 /* =========================
    PAGE
@@ -151,12 +158,12 @@ document.querySelector('#app').innerHTML = `
         <img
           class="wedding-logo"
           src="/logo.png"
-          alt="Margo & Glenn — 2 oktober 2027"
+          alt="Margo & Glenn \u2014 2 oktober 2027"
         />
 
         <div class="hero-divider">
           <span></span>
-          <span class="heart">♡</span>
+          <span class="heart">\u2661</span>
           <span></span>
         </div>
 
@@ -201,7 +208,7 @@ document.querySelector('#app').innerHTML = `
 
       <div class="section-heading">
 
-        <p class="eyebrow">02 · 10 · 2027</p>
+        <p class="eyebrow">02 \u00b7 10 \u00b7 2027</p>
 
         <h2>Onze dag</h2>
 
@@ -213,7 +220,7 @@ document.querySelector('#app').innerHTML = `
 
           <p>
             Een avond zonder zorgen voor iedereen.<br />
-            Daarom vieren we onze dag graag samen met volwassenen.
+            Daarom vieren we onze dag graag samen zonder kinderen.
           </p>
 
         </div>
@@ -227,7 +234,7 @@ document.querySelector('#app').innerHTML = `
 
         <article class="detail-card">
 
-          <div class="detail-icon">♡</div>
+          <div class="detail-icon">\u2661</div>
 
           <h3>Wanneer</h3>
 
@@ -243,7 +250,7 @@ document.querySelector('#app').innerHTML = `
 
         <article class="detail-card">
 
-          <div class="detail-icon">⌖</div>
+          <div class="detail-icon">\u2316</div>
 
           <h3>Waar</h3>
 
@@ -259,7 +266,7 @@ document.querySelector('#app').innerHTML = `
             target="_blank"
             rel="noopener noreferrer"
           >
-            Bekijk de locatie →
+            Bekijk de locatie \u2192
           </a>
 
         </article>
@@ -289,7 +296,7 @@ document.querySelector('#app').innerHTML = `
 
           <span></span>
 
-          <span class="heart">♡</span>
+          <span class="heart">\u2661</span>
 
           <span></span>
 
@@ -310,7 +317,7 @@ document.querySelector('#app').innerHTML = `
 
         <p class="eyebrow">Praktisch</p>
 
-        <h2>Alle details op één plek</h2>
+        <h2>Alle details op \u00e9\u00e9n plek</h2>
 
         <div class="small-line"></div>
 
@@ -323,7 +330,7 @@ document.querySelector('#app').innerHTML = `
 
         <div class="practical-item">
 
-          <h3>📍 Locatie</h3>
+          <h3>\ud83d\udccd Locatie</h3>
 
           <p>
             <strong>Hottentot Hoeve</strong><br />
@@ -347,7 +354,7 @@ document.querySelector('#app').innerHTML = `
 
         <div class="practical-item">
 
-          <h3>📅 Kalender</h3>
+          <h3>\ud83d\udcc5 Kalender</h3>
 
           <p>
             Zet onze trouwdag alvast in je agenda
@@ -363,7 +370,7 @@ document.querySelector('#app').innerHTML = `
               aria-label="Download kalenderbestand"
               title="Download kalenderbestand"
             >
-              📅
+              \ud83d\udcc5
             </button>
 
             <button
@@ -398,14 +405,14 @@ document.querySelector('#app').innerHTML = `
               title="Apple Calendar"
             >
               <span class="calendar-provider-icon apple-calendar-icon">
-                
+                \uf8ff
               </span>
             </button>
 
           </div>
 
           <p class="calendar-help">
-            📅 = kalenderbestand · G = Google · O = Outlook ·  = Apple
+            \ud83d\udcc5 = kalenderbestand \u00b7 G = Google \u00b7 O = Outlook \u00b7 \uf8ff = Apple
           </p>
 
         </div>
@@ -443,7 +450,7 @@ document.querySelector('#app').innerHTML = `
             <div class="invitation-card-inner">
 
               <div class="invitation-card-decoration">
-                ♡
+                \u2661
               </div>
 
               <p class="eyebrow">
@@ -480,7 +487,7 @@ document.querySelector('#app').innerHTML = `
 
                   <span></span>
 
-                  <span>♡</span>
+                  <span>\u2661</span>
 
                   <span></span>
 
@@ -558,11 +565,11 @@ document.querySelector('#app').innerHTML = `
     <footer>
 
       <div class="footer-decoration">
-        ✦
+        \u2726
       </div>
 
       <p>
-        02 · 10 · 2027
+        02 \u00b7 10 \u00b7 2027
       </p>
 
       <span class="footer-line"></span>
