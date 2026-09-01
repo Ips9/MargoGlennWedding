@@ -53,7 +53,6 @@ function createCalendarFile() {
   URL.revokeObjectURL(url)
 }
 
-
 function formatICSDate(date) {
   const year = date.getUTCFullYear()
   const month = String(date.getUTCMonth() + 1).padStart(2, '0')
@@ -64,7 +63,6 @@ function formatICSDate(date) {
 
   return `${year}${month}${day}T${hours}${minutes}${seconds}Z`
 }
-
 
 function escapeICS(value) {
   return String(value)
@@ -163,7 +161,7 @@ document.querySelector('#app').innerHTML = `
 
         <div class="hero-divider">
           <span></span>
-          <span class="heart">\u2661</span>
+          <span class="heart">&#9825;</span>
           <span></span>
         </div>
 
@@ -208,7 +206,7 @@ document.querySelector('#app').innerHTML = `
 
       <div class="section-heading">
 
-        <p class="eyebrow">02 \u00b7 10 \u00b7 2027</p>
+        <p class="eyebrow">02 &#183; 10 &#183; 2027</p>
 
         <h2>Onze dag</h2>
 
@@ -234,7 +232,7 @@ document.querySelector('#app').innerHTML = `
 
         <article class="detail-card">
 
-          <div class="detail-icon">\u2661</div>
+          <div class="detail-icon">&#9825;</div>
 
           <h3>Wanneer</h3>
 
@@ -250,7 +248,7 @@ document.querySelector('#app').innerHTML = `
 
         <article class="detail-card">
 
-          <div class="detail-icon">\u2316</div>
+          <div class="detail-icon">&#8982;</div>
 
           <h3>Waar</h3>
 
@@ -266,7 +264,7 @@ document.querySelector('#app').innerHTML = `
             target="_blank"
             rel="noopener noreferrer"
           >
-            Bekijk de locatie \u2192
+            Bekijk de locatie &#8594;
           </a>
 
         </article>
@@ -296,7 +294,7 @@ document.querySelector('#app').innerHTML = `
 
           <span></span>
 
-          <span class="heart">\u2661</span>
+          <span class="heart">&#9825;</span>
 
           <span></span>
 
@@ -317,7 +315,7 @@ document.querySelector('#app').innerHTML = `
 
         <p class="eyebrow">Praktisch</p>
 
-        <h2>Alle details op \u00e9\u00e9n plek</h2>
+        <h2>Alle details op &eacute;&eacute;n plek</h2>
 
         <div class="small-line"></div>
 
@@ -330,7 +328,7 @@ document.querySelector('#app').innerHTML = `
 
         <div class="practical-item">
 
-          <h3>\ud83d\udccd Locatie</h3>
+          <h3>&#128205; Locatie</h3>
 
           <p>
             <strong>Hottentot Hoeve</strong><br />
@@ -354,7 +352,7 @@ document.querySelector('#app').innerHTML = `
 
         <div class="practical-item">
 
-          <h3>\ud83d\udcc5 Kalender</h3>
+          <h3>&#128197; Kalender</h3>
 
           <p>
             Zet onze trouwdag alvast in je agenda
@@ -370,7 +368,7 @@ document.querySelector('#app').innerHTML = `
               aria-label="Download kalenderbestand"
               title="Download kalenderbestand"
             >
-              \ud83d\udcc5
+              &#128197;
             </button>
 
             <button
@@ -405,14 +403,14 @@ document.querySelector('#app').innerHTML = `
               title="Apple Calendar"
             >
               <span class="calendar-provider-icon apple-calendar-icon">
-                \uf8ff
+                A
               </span>
             </button>
 
           </div>
 
           <p class="calendar-help">
-            \ud83d\udcc5 = kalenderbestand \u00b7 G = Google \u00b7 O = Outlook \u00b7 \uf8ff = Apple
+            &#128197; = kalenderbestand &#183; G = Google &#183; O = Outlook &#183; A = Apple
           </p>
 
         </div>
@@ -450,7 +448,7 @@ document.querySelector('#app').innerHTML = `
             <div class="invitation-card-inner">
 
               <div class="invitation-card-decoration">
-                \u2661
+                &#9825;
               </div>
 
               <p class="eyebrow">
@@ -487,7 +485,7 @@ document.querySelector('#app').innerHTML = `
 
                   <span></span>
 
-                  <span>\u2661</span>
+                  <span>&#9825;</span>
 
                   <span></span>
 
@@ -565,17 +563,17 @@ document.querySelector('#app').innerHTML = `
     <footer>
 
       <div class="footer-decoration">
-        \u2726
+        &#10022;
       </div>
 
       <p>
-        02 \u00b7 10 \u00b7 2027
+        02 &#183; 10 &#183; 2027
       </p>
 
       <span class="footer-line"></span>
 
       <p class="footer-small">
-        With love, Margo & Glenn
+        With love, Margo &amp; Glenn
       </p>
 
     </footer>
@@ -659,6 +657,10 @@ async function loadInvitation(code) {
   }
 }
 
+
+/* =========================
+   RSVP FORM
+========================= */
 
 function renderRsvpForm(code, guests) {
 
@@ -807,6 +809,10 @@ function renderRsvpForm(code, guests) {
 }
 
 
+/* =========================
+   RSVP SUBMIT
+========================= */
+
 async function handleRsvpSubmit(event) {
 
   event.preventDefault()
@@ -816,54 +822,50 @@ async function handleRsvpSubmit(event) {
   const code =
     document.querySelector('#rsvpCode').value
 
-  const guests = [
+  const guestElements = [
     ...form.querySelectorAll('.rsvp-guest')
   ]
 
-
-  const payload = {
-
-    code,
-
-    guests: guests.map((guestElement) => {
+  const guests = guestElements.map(
+    (guestElement) => {
 
       const guestId = Number(
         guestElement.dataset.guestId
       )
 
+      const dinner = guestElement.querySelector(
+        `input[name="dinner-${guestId}"]:checked`
+      )
 
-      const dinner =
-        guestElement.querySelector(
-          `input[name="dinner-${guestId}"]:checked`
-        )
+      const evening = guestElement.querySelector(
+        `input[name="evening-${guestId}"]:checked`
+      )
 
-
-      const evening =
-        guestElement.querySelector(
-          `input[name="evening-${guestId}"]:checked`
-        )
-
-
-      return {
-
-        id: guestId,
-
-        dinnerRsvpStatus: dinner
-          ? dinner.value
-          : 'declined',
-
-        eveningRsvpStatus: evening
-          ? evening.value
-          : 'declined',
-
-        dinnerDietaryRequirements: [],
-
-        eveningDietaryRequirements: []
-
+      const guest = {
+        id: guestId
       }
 
-    })
+      if (dinner) {
+        guest.dinner = {
+          status: dinner.value,
+          dietaryRequirements: []
+        }
+      }
 
+      if (evening) {
+        guest.evening = {
+          status: evening.value,
+          dietaryRequirements: []
+        }
+      }
+
+      return guest
+    }
+  )
+
+  const payload = {
+    code,
+    guests
   }
 
 
@@ -880,17 +882,13 @@ async function handleRsvpSubmit(event) {
       }
     )
 
-
     const data = await response.json()
 
-
     if (!response.ok || !data.ok) {
-
       throw new Error(
         data.error ||
         'RSVP kon niet worden opgeslagen'
       )
-
     }
 
 
@@ -902,27 +900,21 @@ async function handleRsvpSubmit(event) {
     const success =
       document.querySelector('#rsvp-success')
 
-
     success.textContent =
       'Bedankt! Jullie RSVP werd succesvol opgeslagen.'
 
-
     success.hidden = false
-
 
   } catch (error) {
 
     const errorElement =
       document.querySelector('#invitationError')
 
-
     errorElement.textContent =
       error.message ||
       'Er ging iets mis bij het opslaan.'
 
-
     errorElement.hidden = false
-
   }
 }
 
@@ -985,7 +977,6 @@ document
           .toUpperCase()
 
       loadInvitation(code)
-
     }
   )
 
@@ -1047,7 +1038,6 @@ function updateCountdown() {
 
     countdown.textContent =
       formatCountdown()
-
   }
 }
 

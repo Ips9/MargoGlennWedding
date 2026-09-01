@@ -1,0 +1,966 @@
+<!DOCTYPE html>
+<html lang="nl">
+
+<head>
+
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>
+    Margo & Glenn — Admin
+  </title>
+
+  <style>
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family:
+        Inter,
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
+
+      background: #f5f0e7;
+      color: #2d2b24;
+    }
+
+
+    header {
+      background: #ffffff;
+      border-bottom: 1px solid #ddd6c8;
+      padding: 20px 32px;
+
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+
+    header h1 {
+      margin: 0;
+      font-size: 22px;
+      font-weight: 600;
+    }
+
+
+    header span {
+      color: #777;
+      font-size: 14px;
+    }
+
+
+    main {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 32px;
+    }
+
+
+    .cards {
+      display: grid;
+      grid-template-columns:
+        repeat(auto-fit, minmax(180px, 1fr));
+
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+
+
+    .card {
+      background: #ffffff;
+      border: 1px solid #ddd6c8;
+      border-radius: 12px;
+      padding: 20px;
+    }
+
+
+    .card-label {
+      font-size: 13px;
+      color: #777;
+      margin-bottom: 8px;
+    }
+
+
+    .card-value {
+      font-size: 30px;
+      font-weight: 600;
+    }
+
+
+    .section {
+      background: #ffffff;
+      border: 1px solid #ddd6c8;
+      border-radius: 12px;
+      margin-bottom: 24px;
+      overflow: hidden;
+    }
+
+
+    .section-header {
+      padding: 18px 20px;
+      border-bottom: 1px solid #eee8dc;
+
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+
+    .section-header h2 {
+      margin: 0;
+      font-size: 18px;
+    }
+
+
+    .section-body {
+      padding: 20px;
+    }
+
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+
+    th,
+    td {
+      text-align: left;
+      padding: 12px;
+      border-bottom: 1px solid #eee8dc;
+      vertical-align: top;
+    }
+
+
+    th {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: #777;
+    }
+
+
+    td {
+      font-size: 14px;
+    }
+
+
+    .status {
+      display: inline-block;
+      padding: 5px 9px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+
+    .status-active {
+      background: #e6f4ea;
+      color: #26733a;
+    }
+
+
+    .status-inactive {
+      background: #f3e8e8;
+      color: #8a3c3c;
+    }
+
+
+    .status-attending {
+      background: #e6f4ea;
+      color: #26733a;
+    }
+
+
+    .status-declined {
+      background: #f3e8e8;
+      color: #8a3c3c;
+    }
+
+
+    .status-pending {
+      background: #f3efe3;
+      color: #806d35;
+    }
+
+
+    button {
+      border: 0;
+      border-radius: 8px;
+      padding: 8px 12px;
+      cursor: pointer;
+
+      background: #2f3321;
+      color: white;
+    }
+
+
+    button:hover {
+      opacity: 0.9;
+    }
+
+
+    .error {
+      background: #fbe9e9;
+      color: #8a3030;
+      border: 1px solid #e6bcbc;
+      border-radius: 10px;
+      padding: 16px;
+      margin-bottom: 24px;
+    }
+
+
+    .loading {
+      padding: 30px;
+      text-align: center;
+      color: #777;
+    }
+
+
+    .guest-list {
+      margin-top: 12px;
+      border-left: 3px solid #ddd6c8;
+      padding-left: 16px;
+    }
+
+
+    .guest {
+      padding: 12px 0;
+      border-bottom: 1px solid #eee8dc;
+    }
+
+
+    .guest:last-child {
+      border-bottom: 0;
+    }
+
+
+    .guest-name {
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+
+    .guest-statuses {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+
+    .dietary {
+      margin-top: 8px;
+      font-size: 13px;
+      color: #666;
+    }
+
+
+    @media (max-width: 700px) {
+
+      main {
+        padding: 16px;
+      }
+
+      header {
+        padding: 16px;
+      }
+
+      table {
+        font-size: 13px;
+      }
+
+    }
+
+  </style>
+
+</head>
+
+
+<body>
+
+<header>
+
+  <div>
+    <h1>
+      Margo & Glenn — Admin
+    </h1>
+
+    <span id="adminEmail">
+      Laden...
+    </span>
+  </div>
+
+</header>
+
+
+<main>
+
+  <div id="errorContainer"></div>
+
+  <div class="cards">
+
+    <div class="card">
+
+      <div class="card-label">
+        Uitnodigingen
+      </div>
+
+      <div
+        class="card-value"
+        id="statInvitations"
+      >
+        —
+      </div>
+
+    </div>
+
+
+    <div class="card">
+
+      <div class="card-label">
+        Actieve uitnodigingen
+      </div>
+
+      <div
+        class="card-value"
+        id="statActiveInvitations"
+      >
+        —
+      </div>
+
+    </div>
+
+
+    <div class="card">
+
+      <div class="card-label">
+        Gasten
+      </div>
+
+      <div
+        class="card-value"
+        id="statGuests"
+      >
+        —
+      </div>
+
+    </div>
+
+
+    <div class="card">
+
+      <div class="card-label">
+        Dinner aanwezig
+      </div>
+
+      <div
+        class="card-value"
+        id="statDinnerAttending"
+      >
+        —
+      </div>
+
+    </div>
+
+
+    <div class="card">
+
+      <div class="card-label">
+        Avond aanwezig
+      </div>
+
+      <div
+        class="card-value"
+        id="statEveningAttending"
+      >
+        —
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <section class="section">
+
+    <div class="section-header">
+
+      <h2>
+        Uitnodigingen
+      </h2>
+
+      <button
+        onclick="loadDashboard()"
+      >
+        Vernieuwen
+      </button>
+
+    </div>
+
+
+    <div class="section-body">
+
+      <div
+        id="invitationContainer"
+        class="loading"
+      >
+        Dashboard laden...
+      </div>
+
+    </div>
+
+  </section>
+
+</main>
+
+
+<script>
+
+  /*
+   * ==========================================================
+   * LOAD DASHBOARD
+   * ==========================================================
+   */
+
+  async function loadDashboard() {
+
+    const container =
+      document.getElementById(
+        'invitationContainer'
+      )
+
+    const errorContainer =
+      document.getElementById(
+        'errorContainer'
+      )
+
+
+    errorContainer.innerHTML = ''
+
+
+    container.innerHTML =
+      '<div class="loading">Dashboard laden...</div>'
+
+
+    try {
+
+      const response =
+        await fetch(
+          '/admin/api/dashboard'
+        )
+
+
+      const data =
+        await response.json()
+
+
+      if (!response.ok || !data.ok) {
+
+        throw new Error(
+          data.error ||
+          'Dashboard kon niet worden geladen.'
+        )
+      }
+
+
+      /*
+       * ------------------------------------------------------
+       * Admin identity
+       * ------------------------------------------------------
+       */
+
+      document.getElementById(
+        'adminEmail'
+      ).textContent =
+        data.admin.email ||
+        'Authenticated'
+
+
+      /*
+       * ------------------------------------------------------
+       * Statistics
+       * ------------------------------------------------------
+       */
+
+      document.getElementById(
+        'statInvitations'
+      ).textContent =
+        data.summary.invitations
+
+
+      document.getElementById(
+        'statActiveInvitations'
+      ).textContent =
+        data.summary.activeInvitations
+
+
+      document.getElementById(
+        'statGuests'
+      ).textContent =
+        data.summary.guests
+
+
+      document.getElementById(
+        'statDinnerAttending'
+      ).textContent =
+        data.summary.dinnerAttending
+
+
+      document.getElementById(
+        'statEveningAttending'
+      ).textContent =
+        data.summary.eveningAttending
+
+
+      /*
+       * ------------------------------------------------------
+       * Invitations
+       * ------------------------------------------------------
+       */
+
+      if (
+        data.invitations.length === 0
+      ) {
+
+        container.innerHTML =
+          '<p>Nog geen uitnodigingen.</p>'
+
+        return
+      }
+
+
+      container.innerHTML =
+        renderInvitations(
+          data.invitations
+        )
+
+    } catch (error) {
+
+      console.error(error)
+
+
+      errorContainer.innerHTML = `
+        <div class="error">
+          ${escapeHtml(error.message)}
+        </div>
+      `
+
+      container.innerHTML = ''
+
+    }
+
+  }
+
+
+  /*
+   * ==========================================================
+   * RENDER INVITATIONS
+   * ==========================================================
+   */
+
+  function renderInvitations(
+    invitations
+  ) {
+
+    return `
+
+      <table>
+
+        <thead>
+
+          <tr>
+
+            <th>
+              Code
+            </th>
+
+            <th>
+              Status
+            </th>
+
+            <th>
+              Gasten
+            </th>
+
+            <th>
+              Actie
+            </th>
+
+          </tr>
+
+        </thead>
+
+        <tbody>
+
+          ${invitations
+            .map(renderInvitation)
+            .join('')}
+
+        </tbody>
+
+      </table>
+
+    `
+  }
+
+
+  /*
+   * ==========================================================
+   * RENDER ONE INVITATION
+   * ==========================================================
+   */
+
+  function renderInvitation(
+    invitation
+  ) {
+
+    const statusClass =
+      invitation.active
+        ? 'status-active'
+        : 'status-inactive'
+
+
+    const statusText =
+      invitation.active
+        ? 'Actief'
+        : 'Inactief'
+
+
+    return `
+
+      <tr>
+
+        <td>
+
+          <strong>
+            ${escapeHtml(
+              invitation.invitationCode
+            )}
+          </strong>
+
+        </td>
+
+
+        <td>
+
+          <span
+            class="status ${statusClass}"
+          >
+            ${statusText}
+          </span>
+
+        </td>
+
+
+        <td>
+
+          <div>
+
+            ${invitation.guests
+              .map(renderGuest)
+              .join('')}
+
+          </div>
+
+        </td>
+
+
+        <td>
+
+          <button
+            onclick="toggleInvitation(
+              ${invitation.id},
+              ${!invitation.active}
+            )"
+          >
+
+            ${
+              invitation.active
+                ? 'Deactiveren'
+                : 'Activeren'
+            }
+
+          </button>
+
+        </td>
+
+      </tr>
+
+    `
+  }
+
+
+  /*
+   * ==========================================================
+   * RENDER GUEST
+   * ==========================================================
+   */
+
+  function renderGuest(
+    guest
+  ) {
+
+    const dinner =
+      guest.invitedToDinner
+        ? renderStatus(
+            guest.dinnerRsvpStatus
+          )
+        : ''
+
+
+    const evening =
+      guest.invitedToEvening
+        ? renderStatus(
+            guest.eveningRsvpStatus
+          )
+        : ''
+
+
+    const dietary =
+      guest.dietaryRequirements.length > 0
+        ? `
+          <div class="dietary">
+
+            Dieet:
+
+            ${guest.dietaryRequirements
+              .map(
+                requirement =>
+                  escapeHtml(
+                    formatDietary(
+                      requirement
+                    )
+                  )
+              )
+              .join(', ')}
+
+          </div>
+        `
+        : ''
+
+
+    return `
+
+      <div class="guest">
+
+        <div class="guest-name">
+
+          ${escapeHtml(
+            guest.name
+          )}
+
+        </div>
+
+
+        <div class="guest-statuses">
+
+          ${dinner}
+
+          ${evening}
+
+        </div>
+
+
+        ${dietary}
+
+      </div>
+
+    `
+  }
+
+
+  /*
+   * ==========================================================
+   * RSVP STATUS
+   * ==========================================================
+   */
+
+  function renderStatus(
+    status
+  ) {
+
+    if (status === 'attending') {
+
+      return `
+        <span
+          class="status status-attending"
+        >
+          Aanwezig
+        </span>
+      `
+
+    }
+
+
+    if (status === 'declined') {
+
+      return `
+        <span
+          class="status status-declined"
+        >
+          Niet aanwezig
+        </span>
+      `
+
+    }
+
+
+    return `
+      <span
+        class="status status-pending"
+      >
+        Nog geen antwoord
+      </span>
+    `
+  }
+
+
+  /*
+   * ==========================================================
+   * DIETARY
+   * ==========================================================
+   */
+
+  function formatDietary(
+    requirement
+  ) {
+
+    const labels = {
+
+      vegetarian: 'Vegetarisch',
+      vegan: 'Vegan',
+      gluten: 'Glutenvrij',
+      lactose: 'Lactosevrij',
+      nuts: 'Noten',
+      shellfish: 'Schaaldieren',
+      fish: 'Vis'
+
+    }
+
+
+    if (
+      requirement.category === 'other'
+    ) {
+
+      return (
+        'Andere: ' +
+        (
+          requirement.otherText ||
+          ''
+        )
+      )
+    }
+
+
+    return (
+      labels[
+        requirement.category
+      ] ||
+      requirement.category
+    )
+  }
+
+
+  /*
+   * ==========================================================
+   * TOGGLE INVITATION
+   * ==========================================================
+   */
+
+  async function toggleInvitation(
+    id,
+    active
+  ) {
+
+    try {
+
+      const response =
+        await fetch(
+          '/admin/api/invitation/toggle',
+          {
+            method: 'POST',
+
+            headers: {
+              'Content-Type':
+                'application/json'
+            },
+
+            body: JSON.stringify({
+              id,
+              active
+            })
+          }
+        )
+
+
+      const data =
+        await response.json()
+
+
+      if (
+        !response.ok ||
+        !data.ok
+      ) {
+
+        throw new Error(
+          data.error ||
+          'Kon uitnodiging niet aanpassen.'
+        )
+      }
+
+
+      await loadDashboard()
+
+    } catch (error) {
+
+      alert(
+        error.message
+      )
+
+    }
+
+  }
+
+
+  /*
+   * ==========================================================
+   * HTML ESCAPE
+   * ==========================================================
+   */
+
+  function escapeHtml(
+    value
+  ) {
+
+    return String(value ?? '')
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
+      .replaceAll('"', '&quot;')
+      .replaceAll("'", '&#039;')
+  }
+
+
+  /*
+   * ==========================================================
+   * START
+   * ==========================================================
+   */
+
+  loadDashboard()
+
+</script>
+
+</body>
+
+</html>
