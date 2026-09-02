@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>Margo & Glenn — Admin</title>
 <style>
-*{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f5f0e7;color:#2d2b24}header{background:#fff;border-bottom:1px solid #ddd6c8;padding:20px 32px;display:flex;align-items:center;justify-content:space-between}header h1{margin:0;font-size:22px;font-weight:600}header span{color:#777;font-size:14px}main{max-width:1500px;margin:auto;padding:32px}.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:16px;margin-bottom:28px}.card,.section{background:#fff;border:1px solid #ddd6c8;border-radius:12px}.card{padding:18px}.card-label{font-size:13px;color:#777;margin-bottom:8px}.card-value{font-size:30px;font-weight:600}.section{margin-bottom:24px;overflow:hidden}.section-header{padding:18px 20px;border-bottom:1px solid #eee8dc;display:flex;align-items:center;justify-content:space-between}.section-header h2{margin:0;font-size:18px}.section-body{padding:20px}.error{background:#fbe9e9;color:#8a3030;border:1px solid #e6bcbc;border-radius:10px;padding:16px;margin-bottom:24px}.loading{padding:30px;text-align:center;color:#777}button{border:0;border-radius:8px;padding:9px 13px;cursor:pointer;background:#2f3321;color:#fff}button:hover{opacity:.9}button:disabled{opacity:.5;cursor:not-allowed}.invitation{border:1px solid #e1dbcf;border-radius:12px;margin-bottom:16px;overflow:hidden}.invitation-head{padding:16px 18px;background:#faf8f3;display:flex;gap:16px;align-items:center;justify-content:space-between}.invitation-code{font-size:17px;font-weight:650;letter-spacing:.08em}.invitation-meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.status{display:inline-block;padding:5px 9px;border-radius:999px;font-size:12px;font-weight:600;white-space:nowrap}.status-active{background:#e6f4ea;color:#26733a}.status-inactive{background:#f3e8e8;color:#8a3c3c}.status-attending{background:#e6f4ea;color:#26733a}.status-declined{background:#f3e8e8;color:#8a3c3c}.status-pending{background:#f3efe3;color:#806d35}.guest{padding:18px;border-top:1px solid #eee8dc}.guest:first-child{border-top:0}.guest-top{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}.guest-name{font-weight:650;font-size:17px;margin-bottom:5px}.guest-email{font-size:13px;color:#777}.guest-statuses{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}.dietary{margin-top:14px;padding:12px 14px;background:#faf8f3;border:1px solid #eee8dc;border-radius:8px;font-size:13px}.dietary-title{font-weight:650;margin-bottom:7px}.dietary-item{margin:4px 0;color:#555}.history{margin-top:14px;font-size:12px;color:#777}.history summary{cursor:pointer;color:#555;font-weight:600}.history-row{padding:4px 0}.empty{color:#888;font-style:italic}@media(max-width:700px){main{padding:16px}header{padding:16px}.invitation-head,.guest-top{align-items:flex-start;flex-direction:column}.section-body{padding:14px}}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f5f0e7;color:#2d2b24}header{background:#fff;border-bottom:1px solid #ddd6c8;padding:20px 32px;display:flex;align-items:center;justify-content:space-between}header h1{margin:0;font-size:22px;font-weight:600}header span{color:#777;font-size:14px}main{max-width:1500px;margin:auto;padding:32px}.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:16px;margin-bottom:28px}.card,.section{background:#fff;border:1px solid #ddd6c8;border-radius:12px}.card{padding:18px}.card-label{font-size:13px;color:#777;margin-bottom:8px}.card-value{font-size:30px;font-weight:600}.section{margin-bottom:24px;overflow:hidden}.section-header{padding:18px 20px;border-bottom:1px solid #eee8dc;display:flex;align-items:center;justify-content:space-between}.section-header h2{margin:0;font-size:18px}.section-body{padding:20px}.error{background:#fbe9e9;color:#8a3030;border:1px solid #e6bcbc;border-radius:10px;padding:16px;margin-bottom:24px}.success{background:#edf6ee;color:#2f6538;border:1px solid #bfd9c2;border-radius:10px;padding:16px;margin-bottom:20px}.loading{padding:30px;text-align:center;color:#777}button{border:0;border-radius:8px;padding:9px 13px;cursor:pointer;background:#2f3321;color:#fff}button:hover{opacity:.9}button:disabled{opacity:.5;cursor:not-allowed}.secondary-button{background:#eee9de;color:#34342b}.invitation{border:1px solid #e1dbcf;border-radius:12px;margin-bottom:16px;overflow:hidden}.invitation-head{padding:16px 18px;background:#faf8f3;display:flex;gap:16px;align-items:center;justify-content:space-between}.invitation-code{font-size:17px;font-weight:650;letter-spacing:.08em}.invitation-meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.status{display:inline-block;padding:5px 9px;border-radius:999px;font-size:12px;font-weight:600;white-space:nowrap}.status-active{background:#e6f4ea;color:#26733a}.status-inactive{background:#f3e8e8;color:#8a3c3c}.status-attending{background:#e6f4ea;color:#26733a}.status-declined{background:#f3e8e8;color:#8a3c3c}.status-pending{background:#f3efe3;color:#806d35}.guest{padding:18px;border-top:1px solid #eee8dc}.guest:first-child{border-top:0}.guest-top{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}.guest-name{font-weight:650;font-size:17px;margin-bottom:5px}.guest-email{font-size:13px;color:#777}.guest-statuses{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}.dietary{margin-top:14px;padding:12px 14px;background:#faf8f3;border:1px solid #eee8dc;border-radius:8px;font-size:13px}.dietary-title{font-weight:650;margin-bottom:7px}.dietary-item{margin:4px 0;color:#555}.history{margin-top:14px;font-size:12px;color:#777}.history summary{cursor:pointer;color:#555;font-weight:600}.history-row{padding:4px 0}.empty{color:#888;font-style:italic}.create-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:18px}.guest-editor{padding:18px;border:1px solid #e1dbcf;border-radius:10px;background:#faf8f3}.guest-editor h3{margin:0 0 14px;font-size:15px}.field-label{display:block;font-size:12px;color:#666;margin-bottom:7px;font-weight:600}.name-input{width:100%;height:44px;border:1px solid #d6d0c4;border-radius:8px;background:#fff;padding:0 12px;font:inherit;color:#2d2b24}.scope-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:12px}.scope-option{display:flex;align-items:center;gap:8px;padding:10px 12px;border:1px solid #ddd6c8;border-radius:8px;background:#fff;font-size:12px;cursor:pointer}.scope-option input{accent-color:#4f5430}.form-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.created-code{margin-top:18px;padding:18px;border:1px dashed #b29368;border-radius:10px;background:#fffdf8}.created-code strong{display:block;font-size:24px;letter-spacing:.12em;margin:6px 0 12px}.helper{font-size:12px;line-height:1.6;color:#777;margin:0 0 18px}.small-error{font-size:12px;color:#8a3030;margin-top:10px}@media(max-width:700px){main{padding:16px}header{padding:16px}.invitation-head,.guest-top{align-items:flex-start;flex-direction:column}.section-body{padding:14px}.scope-grid{grid-template-columns:1fr}.form-actions button{width:100%}}
 </style>
 </head>
 <body>
@@ -21,14 +21,73 @@
 <div class="card"><div class="card-label">Avond aanwezig</div><div class="card-value" id="statEveningAttending">—</div></div>
 <div class="card"><div class="card-label">Avond niet aanwezig</div><div class="card-value" id="statEveningDeclined">—</div></div>
 </div>
+
+<section class="section">
+<div class="section-header"><h2>Nieuwe uitnodiging</h2></div>
+<div class="section-body">
+<p class="helper">Maak hier een nieuwe uitnodiging aan. Kies 1 of 2 gasten en bepaal per gast of die persoon voor het diner, het avondfeest of beide is uitgenodigd.</p>
+<form id="createInvitationForm">
+<div class="create-grid" id="guestEditors"></div>
+<div class="form-actions" style="margin-top:18px"><button type="submit" id="createInvitationButton">Uitnodiging aanmaken</button><button type="button" class="secondary-button" id="resetInvitationButton">Leegmaken</button></div>
+<div id="createInvitationError" class="small-error" hidden></div>
+<div id="createdCode" class="created-code" hidden></div>
+</form>
+</div>
+</section>
+
 <section class="section"><div class="section-header"><h2>Uitnodigingen & RSVP's</h2><button onclick="loadDashboard()">Vernieuwen</button></div><div class="section-body"><div id="invitationContainer" class="loading">Dashboard laden...</div></div></section>
 </main>
 <script>
+const guestEditors=document.getElementById('guestEditors');
+const createForm=document.getElementById('createInvitationForm');
+const createButton=document.getElementById('createInvitationButton');
+const createError=document.getElementById('createInvitationError');
+const createdCode=document.getElementById('createdCode');
+
+function renderGuestEditors(){
+ guestEditors.innerHTML='';
+ for(let index=1;index<=2;index++){
+  guestEditors.insertAdjacentHTML('beforeend',`<div class="guest-editor"><h3>Gast ${index}</h3><label class="field-label" for="guestName${index}">Naam</label><input class="name-input" id="guestName${index}" type="text" maxlength="150" placeholder="Voornaam en familienaam" autocomplete="off"><span class="field-label" style="margin-top:14px">Uitgenodigd voor</span><div class="scope-grid"><label class="scope-option"><input type="radio" name="guestScope${index}" value="both" checked> Diner + avondfeest</label><label class="scope-option"><input type="radio" name="guestScope${index}" value="dinner"> Alleen diner</label><label class="scope-option"><input type="radio" name="guestScope${index}" value="evening"> Alleen avondfeest</label></div></div>`);
+ }
+}
+renderGuestEditors();
+
+function getGuestCount(){return document.querySelectorAll('.guest-editor').length}
+
+async function createInvitation(event){
+ event.preventDefault();
+ createError.hidden=true;createError.textContent='';createdCode.hidden=true;
+ const guests=[];
+ for(let index=1;index<=getGuestCount();index++){
+  const name=document.getElementById(`guestName${index}`).value.trim();
+  const scope=document.querySelector(`input[name="guestScope${index}"]:checked`)?.value;
+  if(!name){createError.textContent=`Vul de naam van gast ${index} in.`;createError.hidden=false;document.getElementById(`guestName${index}`).focus();return}
+  guests.push({name,invitedToDinner:scope==='both'||scope==='dinner',invitedToEvening:scope==='both'||scope==='evening'});
+ }
+ createButton.disabled=true;createButton.textContent='Aanmaken…';
+ try{
+  const response=await fetch('/admin/api/invitation/create',{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify({guests})});
+  const text=await response.text();let data;try{data=JSON.parse(text)}catch{throw new Error(`Admin API gaf geen JSON terug (HTTP ${response.status}).`)}
+  if(!response.ok||!data.ok)throw new Error(data.error||'Uitnodiging kon niet worden aangemaakt.');
+  const code=data.invitation.invitationCode;
+  createdCode.innerHTML=`<div>Uitnodiging aangemaakt</div><strong>${escapeHtml(code)}</strong><div class="form-actions"><button type="button" onclick="copyInvitationCode('${escapeHtml(code)}')">Code kopiëren</button><button type="button" class="secondary-button" onclick="window.open('/#rsvp','_blank')">RSVP-pagina openen</button></div><p class="helper" style="margin:12px 0 0">Bewaar deze code: gasten gebruiken hem om hun persoonlijke uitnodiging te openen.</p>`;
+  createdCode.hidden=false;
+  createForm.reset();
+  renderGuestEditors();
+  await loadDashboard();
+ }catch(error){console.error(error);createError.textContent=error.message||'Uitnodiging kon niet worden aangemaakt.';createError.hidden=false}
+ finally{createButton.disabled=false;createButton.textContent='Uitnodiging aanmaken'}
+}
+
+async function copyInvitationCode(code){try{await navigator.clipboard.writeText(code);alert('Uitnodigingscode gekopieerd.')}catch{alert(`Uitnodigingscode: ${code}`)}}
+createForm.addEventListener('submit',createInvitation);
+document.getElementById('resetInvitationButton').addEventListener('click',()=>{createForm.reset();renderGuestEditors();createError.hidden=true;createdCode.hidden=true});
+
 async function loadDashboard(){
  const container=document.getElementById('invitationContainer'),errorContainer=document.getElementById('errorContainer');
  errorContainer.innerHTML='';container.innerHTML='<div class="loading">Dashboard laden...</div>';
  try{
-  const response=await fetch('/admin/api/dashboard',{cache:'no-store'});
+  const response=await fetch('/admin/api/dashboard',{cache:'no-store',headers:{Accept:'application/json'}});
   const contentType=response.headers.get('content-type')||'';
   const text=await response.text();
   let data;
@@ -63,7 +122,7 @@ function renderDietary(requirements){
 }
 function statusText(status){return status==='attending'?'Aanwezig':status==='declined'?'Niet aanwezig':'Nog geen antwoord'}
 function statusClass(status){return status==='attending'?'status-attending':status==='declined'?'status-declined':'status-pending'}
-async function toggleInvitation(id,active){try{const response=await fetch('/admin/api/invitation/toggle',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id,active})});const data=await response.json();if(!response.ok||!data.ok)throw new Error(data.error||'Kon uitnodiging niet aanpassen.');await loadDashboard()}catch(error){alert(error.message)}}
+async function toggleInvitation(id,active){try{const response=await fetch('/admin/api/invitation/toggle',{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify({id,active})});const text=await response.text();let data;try{data=JSON.parse(text)}catch{throw new Error(`Admin API gaf geen JSON terug (HTTP ${response.status}).`)}if(!response.ok||!data.ok)throw new Error(data.error||'Kon uitnodiging niet aanpassen.');await loadDashboard()}catch(error){alert(error.message)}}
 function escapeHtml(value){return String(value??'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#039;')}
 loadDashboard()
 </script>
