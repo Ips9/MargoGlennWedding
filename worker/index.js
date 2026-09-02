@@ -6,16 +6,6 @@ export default {
      * ==========================================================
      * ADMIN
      * ==========================================================
-     *
-     * Cloudflare Access must protect:
-     *
-     *   /admin*
-     *
-     * Access authenticates the user before the Worker runs.
-     * We then use ctx.access to verify that Access actually
-     * authenticated the request.
-     *
-     * ==========================================================
      */
 
     if (url.pathname === '/admin' || url.pathname === '/admin/') {
@@ -25,7 +15,6 @@ export default {
     if (url.pathname.startsWith('/admin/api/')) {
       return handleAdminApi(request, env, ctx)
     }
-
 
     /*
      * ==========================================================
@@ -47,7 +36,6 @@ export default {
     if (url.pathname === '/api/rsvp') {
       return handleRsvp(request, env)
     }
-
 
     /*
      * ==========================================================
@@ -74,7 +62,11 @@ async function getAccessIdentity(ctx) {
   try {
     return await ctx.access.getIdentity()
   } catch (error) {
-    console.error('Cloudflare Access identity lookup failed:', error)
+    console.error(
+      'Cloudflare Access identity lookup failed:',
+      error
+    )
+
     return null
   }
 }
@@ -94,14 +86,6 @@ async function handleAdminPage(request, env, ctx) {
       status: 401
     })
   }
-
-  /*
-   * admin.html lives in:
-   *
-   *   public/admin.html
-   *
-   * We serve that file instead of the normal website.
-   */
 
   return env.ASSETS.fetch(
     new Request(
@@ -135,7 +119,6 @@ async function handleAdminApi(request, env, ctx) {
 
   const url = new URL(request.url)
 
-
   /*
    * ----------------------------------------------------------
    * GET /admin/api/health
@@ -153,7 +136,6 @@ async function handleAdminApi(request, env, ctx) {
     })
   }
 
-
   /*
    * ----------------------------------------------------------
    * GET /admin/api/dashboard
@@ -166,7 +148,6 @@ async function handleAdminApi(request, env, ctx) {
   ) {
     return handleAdminDashboard(env, identity)
   }
-
 
   /*
    * ----------------------------------------------------------
@@ -184,7 +165,6 @@ async function handleAdminApi(request, env, ctx) {
       identity
     )
   }
-
 
   /*
    * ----------------------------------------------------------
@@ -212,7 +192,6 @@ async function handleAdminApi(request, env, ctx) {
 
 async function handleAdminDashboard(env, identity) {
   try {
-
     /*
      * --------------------------------------------------------
      * Invitations
@@ -230,7 +209,6 @@ async function handleAdminDashboard(env, identity) {
           ORDER BY id
         `)
         .all()
-
 
     /*
      * --------------------------------------------------------
@@ -255,7 +233,6 @@ async function handleAdminDashboard(env, identity) {
         `)
         .all()
 
-
     /*
      * --------------------------------------------------------
      * Dietary requirements
@@ -277,7 +254,6 @@ async function handleAdminDashboard(env, identity) {
         `)
         .all()
 
-
     /*
      * --------------------------------------------------------
      * RSVP history
@@ -297,7 +273,6 @@ async function handleAdminDashboard(env, identity) {
           ORDER BY created_at DESC
         `)
         .all()
-
 
     /*
      * --------------------------------------------------------
@@ -330,7 +305,6 @@ async function handleAdminDashboard(env, identity) {
                     otherText: requirement.other_text
                   }))
 
-
               const rsvpHistory =
                 rsvpResult.results
                   .filter(
@@ -343,7 +317,6 @@ async function handleAdminDashboard(env, identity) {
                     eventPart: response.event_part,
                     createdAt: response.created_at
                   }))
-
 
               return {
                 id: guest.id,
@@ -370,7 +343,6 @@ async function handleAdminDashboard(env, identity) {
               }
             })
 
-
         return {
           id: invitation.id,
 
@@ -383,7 +355,6 @@ async function handleAdminDashboard(env, identity) {
           guests
         }
       })
-
 
     /*
      * --------------------------------------------------------
@@ -430,7 +401,6 @@ async function handleAdminDashboard(env, identity) {
         ).length
     }
 
-
     /*
      * --------------------------------------------------------
      * Response
@@ -450,7 +420,6 @@ async function handleAdminDashboard(env, identity) {
     })
 
   } catch (error) {
-
     console.error(
       'Admin dashboard failed:',
       error
@@ -502,7 +471,6 @@ async function handleAdminInvitationToggle(
     )
   }
 
-
   /*
    * ----------------------------------------------------------
    * Validate input
@@ -527,7 +495,6 @@ async function handleAdminInvitationToggle(
     )
   }
 
-
   /*
    * ----------------------------------------------------------
    * Update
@@ -535,7 +502,6 @@ async function handleAdminInvitationToggle(
    */
 
   try {
-
     const result =
       await env.margo_glenn_wedding_db
         .prepare(`
@@ -549,7 +515,6 @@ async function handleAdminInvitationToggle(
         )
         .run()
 
-
     if (result.meta.changes === 0) {
       return Response.json(
         {
@@ -562,20 +527,17 @@ async function handleAdminInvitationToggle(
       )
     }
 
-
     console.log(
       `Invitation ${id} set to ${
         active ? 'active' : 'inactive'
       } by ${identity.email ?? 'unknown'}`
     )
 
-
     return Response.json({
       ok: true
     })
 
   } catch (error) {
-
     console.error(
       'Invitation toggle failed:',
       error
@@ -621,12 +583,10 @@ async function handleInvitation(request, env) {
     )
   }
 
-
   const url = new URL(request.url)
 
   const rawCode =
     url.searchParams.get('code')
-
 
   if (!rawCode) {
     return Response.json(
@@ -640,12 +600,10 @@ async function handleInvitation(request, env) {
     )
   }
 
-
   const code =
     rawCode
       .trim()
       .toUpperCase()
-
 
   if (!/^MG-[A-Z0-9]{6}$/.test(code)) {
     return Response.json(
@@ -658,7 +616,6 @@ async function handleInvitation(request, env) {
       }
     )
   }
-
 
   try {
 
@@ -681,7 +638,6 @@ async function handleInvitation(request, env) {
         .bind(code)
         .first()
 
-
     if (
       !invitation ||
       invitation.active !== 1
@@ -696,7 +652,6 @@ async function handleInvitation(request, env) {
         }
       )
     }
-
 
     /*
      * --------------------------------------------------------
@@ -722,6 +677,32 @@ async function handleInvitation(request, env) {
         .bind(invitation.id)
         .all()
 
+    /*
+     * --------------------------------------------------------
+     * Find dietary requirements
+     * --------------------------------------------------------
+     */
+
+    const dietaryResult =
+      await env.margo_glenn_wedding_db
+        .prepare(`
+          SELECT
+            id,
+            guest_id,
+            event_part,
+            category,
+            other_type,
+            other_text
+          FROM guest_dietary_requirements
+          WHERE guest_id IN (
+            SELECT id
+            FROM guests
+            WHERE invitation_id = ?
+          )
+          ORDER BY guest_id, event_part, id
+        `)
+        .bind(invitation.id)
+        .all()
 
     /*
      * --------------------------------------------------------
@@ -730,27 +711,45 @@ async function handleInvitation(request, env) {
      */
 
     const guests =
-      result.results.map((guest) => ({
-        id: guest.id,
+      result.results.map((guest) => {
 
-        name: guest.name,
+        const dietaryRequirements =
+          dietaryResult.results
+            .filter(
+              (requirement) =>
+                requirement.guest_id === guest.id
+            )
+            .map((requirement) => ({
+              id: requirement.id,
+              eventPart: requirement.event_part,
+              category: requirement.category,
+              otherType: requirement.other_type,
+              otherText: requirement.other_text
+            }))
 
-        invitedToDinner:
-          guest.invited_to_dinner === 1,
+        return {
+          id: guest.id,
 
-        invitedToEvening:
-          guest.invited_to_evening === 1,
+          name: guest.name,
 
-        rsvpStatus:
-          guest.rsvp_status,
+          invitedToDinner:
+            guest.invited_to_dinner === 1,
 
-        dinnerRsvpStatus:
-          guest.dinner_rsvp_status,
+          invitedToEvening:
+            guest.invited_to_evening === 1,
 
-        eveningRsvpStatus:
-          guest.evening_rsvp_status
-      }))
+          rsvpStatus:
+            guest.rsvp_status,
 
+          dinnerRsvpStatus:
+            guest.dinner_rsvp_status,
+
+          eveningRsvpStatus:
+            guest.evening_rsvp_status,
+
+          dietaryRequirements
+        }
+      })
 
     return Response.json({
       ok: true,
@@ -804,7 +803,6 @@ async function handleRsvp(request, env) {
     )
   }
 
-
   /*
    * ----------------------------------------------------------
    * Parse JSON
@@ -827,7 +825,6 @@ async function handleRsvp(request, env) {
     )
   }
 
-
   /*
    * ----------------------------------------------------------
    * Validate invitation code
@@ -838,7 +835,6 @@ async function handleRsvp(request, env) {
     typeof body?.code === 'string'
       ? body.code.trim().toUpperCase()
       : ''
-
 
   if (!/^MG-[A-Z0-9]{6}$/.test(code)) {
     return Response.json(
@@ -851,7 +847,6 @@ async function handleRsvp(request, env) {
       }
     )
   }
-
 
   /*
    * ----------------------------------------------------------
@@ -874,7 +869,6 @@ async function handleRsvp(request, env) {
     )
   }
 
-
   try {
 
     /*
@@ -896,7 +890,6 @@ async function handleRsvp(request, env) {
         .bind(code)
         .first()
 
-
     if (
       !invitation ||
       invitation.active !== 1
@@ -911,7 +904,6 @@ async function handleRsvp(request, env) {
         }
       )
     }
-
 
     /*
      * --------------------------------------------------------
@@ -931,7 +923,6 @@ async function handleRsvp(request, env) {
         `)
         .first()
 
-
     if (!settings) {
       return Response.json(
         {
@@ -943,7 +934,6 @@ async function handleRsvp(request, env) {
         }
       )
     }
-
 
     /*
      * --------------------------------------------------------
@@ -958,7 +948,6 @@ async function handleRsvp(request, env) {
         settings.rsvp_change_deadline
       )
 
-
     if (now > changeDeadline) {
       return Response.json(
         {
@@ -970,7 +959,6 @@ async function handleRsvp(request, env) {
         }
       )
     }
-
 
     /*
      * --------------------------------------------------------
@@ -992,7 +980,6 @@ async function handleRsvp(request, env) {
         .bind(invitation.id)
         .all()
 
-
     const guestsById =
       new Map(
         guestResult.results.map(
@@ -1003,7 +990,6 @@ async function handleRsvp(request, env) {
         )
       )
 
-
     /*
      * --------------------------------------------------------
      * Validate submitted guests
@@ -1013,12 +999,10 @@ async function handleRsvp(request, env) {
     const submittedGuestIds =
       new Set()
 
-
     for (const submittedGuest of body.guests) {
 
       const guestId =
         Number(submittedGuest?.id)
-
 
       /*
        * Guest ID
@@ -1036,7 +1020,6 @@ async function handleRsvp(request, env) {
         )
       }
 
-
       /*
        * Duplicate guest
        */
@@ -1053,9 +1036,7 @@ async function handleRsvp(request, env) {
         )
       }
 
-
       submittedGuestIds.add(guestId)
-
 
       /*
        * Guest must belong to invitation
@@ -1063,7 +1044,6 @@ async function handleRsvp(request, env) {
 
       const guest =
         guestsById.get(guestId)
-
 
       if (!guest) {
         return Response.json(
@@ -1077,7 +1057,6 @@ async function handleRsvp(request, env) {
         )
       }
 
-
       /*
        * ------------------------------------------------------
        * Dinner
@@ -1088,7 +1067,6 @@ async function handleRsvp(request, env) {
 
         const dinner =
           submittedGuest.dinner
-
 
         if (
           !dinner ||
@@ -1108,12 +1086,34 @@ async function handleRsvp(request, env) {
           )
         }
 
+        const dinnerRequirements =
+          dinner.dietaryRequirements || []
+
+        /*
+         * Dietary requirements are only valid
+         * when attending dinner.
+         */
+
+        if (
+          dinner.status === 'declined' &&
+          dinnerRequirements.length > 0
+        ) {
+          return Response.json(
+            {
+              ok: false,
+              error:
+                'Dietary requirements cannot be submitted when declining dinner'
+            },
+            {
+              status: 400
+            }
+          )
+        }
 
         const dietaryError =
           validateDietaryRequirements(
-            dinner.dietaryRequirements
+            dinnerRequirements
           )
-
 
         if (dietaryError) {
           return Response.json(
@@ -1142,7 +1142,6 @@ async function handleRsvp(request, env) {
         )
       }
 
-
       /*
        * ------------------------------------------------------
        * Evening
@@ -1153,7 +1152,6 @@ async function handleRsvp(request, env) {
 
         const evening =
           submittedGuest.evening
-
 
         if (
           !evening ||
@@ -1173,12 +1171,34 @@ async function handleRsvp(request, env) {
           )
         }
 
+        const eveningRequirements =
+          evening.dietaryRequirements || []
+
+        /*
+         * Dietary requirements are only valid
+         * when attending the evening.
+         */
+
+        if (
+          evening.status === 'declined' &&
+          eveningRequirements.length > 0
+        ) {
+          return Response.json(
+            {
+              ok: false,
+              error:
+                'Dietary requirements cannot be submitted when declining evening'
+            },
+            {
+              status: 400
+            }
+          )
+        }
 
         const dietaryError =
           validateDietaryRequirements(
-            evening.dietaryRequirements
+            eveningRequirements
           )
-
 
         if (dietaryError) {
           return Response.json(
@@ -1208,7 +1228,6 @@ async function handleRsvp(request, env) {
       }
     }
 
-
     /*
      * --------------------------------------------------------
      * Require every invited guest
@@ -1232,7 +1251,6 @@ async function handleRsvp(request, env) {
       }
     }
 
-
     /*
      * --------------------------------------------------------
      * Build database statements
@@ -1241,7 +1259,6 @@ async function handleRsvp(request, env) {
 
     const statements = []
 
-
     for (const submittedGuest of body.guests) {
 
       const guestId =
@@ -1249,7 +1266,6 @@ async function handleRsvp(request, env) {
 
       const guest =
         guestsById.get(guestId)
-
 
       /*
        * ------------------------------------------------------
@@ -1274,7 +1290,6 @@ async function handleRsvp(request, env) {
             )
         )
 
-
         statements.push(
           env.margo_glenn_wedding_db
             .prepare(`
@@ -1291,7 +1306,6 @@ async function handleRsvp(request, env) {
             )
         )
 
-
         statements.push(
           env.margo_glenn_wedding_db
             .prepare(`
@@ -1301,7 +1315,6 @@ async function handleRsvp(request, env) {
             `)
             .bind(guestId)
         )
-
 
         for (
           const requirement
@@ -1330,7 +1343,6 @@ async function handleRsvp(request, env) {
         }
       }
 
-
       /*
        * ------------------------------------------------------
        * Evening
@@ -1354,7 +1366,6 @@ async function handleRsvp(request, env) {
             )
         )
 
-
         statements.push(
           env.margo_glenn_wedding_db
             .prepare(`
@@ -1371,7 +1382,6 @@ async function handleRsvp(request, env) {
             )
         )
 
-
         statements.push(
           env.margo_glenn_wedding_db
             .prepare(`
@@ -1381,7 +1391,6 @@ async function handleRsvp(request, env) {
             `)
             .bind(guestId)
         )
-
 
         for (
           const requirement
@@ -1411,7 +1420,6 @@ async function handleRsvp(request, env) {
       }
     }
 
-
     /*
      * --------------------------------------------------------
      * Execute batch
@@ -1420,7 +1428,6 @@ async function handleRsvp(request, env) {
 
     await env.margo_glenn_wedding_db
       .batch(statements)
-
 
     /*
      * --------------------------------------------------------
@@ -1468,7 +1475,6 @@ function validateDietaryRequirements(requirements) {
     return null
   }
 
-
   /*
    * Must be an array.
    */
@@ -1476,7 +1482,6 @@ function validateDietaryRequirements(requirements) {
   if (!Array.isArray(requirements)) {
     return 'Invalid dietary requirements'
   }
-
 
   /*
    * Allowed categories.
@@ -1494,10 +1499,8 @@ function validateDietaryRequirements(requirements) {
       'other'
     ])
 
-
   const seenCategories =
     new Set()
-
 
   /*
    * Validate each requirement.
@@ -1512,10 +1515,8 @@ function validateDietaryRequirements(requirements) {
       return 'Invalid dietary requirement'
     }
 
-
     const category =
       requirement.category
-
 
     /*
      * Category must be allowed.
@@ -1527,7 +1528,6 @@ function validateDietaryRequirements(requirements) {
       return 'Invalid dietary requirement category'
     }
 
-
     /*
      * Same category cannot be submitted twice.
      */
@@ -1538,9 +1538,7 @@ function validateDietaryRequirements(requirements) {
       return 'Duplicate dietary requirement'
     }
 
-
     seenCategories.add(category)
-
 
     /*
      * "Other" requires type + description.
@@ -1564,7 +1562,8 @@ function validateDietaryRequirements(requirements) {
     } else {
 
       /*
-       * Other fields are not allowed for normal categories.
+       * Other fields are not allowed
+       * for normal categories.
        */
 
       if (
@@ -1574,7 +1573,6 @@ function validateDietaryRequirements(requirements) {
         return 'Invalid dietary requirement'
       }
 
-
       if (
         requirement.otherText !== undefined &&
         requirement.otherText !== null
@@ -1583,7 +1581,6 @@ function validateDietaryRequirements(requirements) {
       }
     }
   }
-
 
   return null
 }

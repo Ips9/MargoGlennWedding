@@ -20,9 +20,9 @@
 }
 
 
-/* =========================
+/* =========================================================
    RESET
-========================= */
+========================================================= */
 
 * {
   box-sizing: border-box;
@@ -34,10 +34,8 @@ html {
 
 body {
   margin: 0;
-
   background: var(--cream);
   color: var(--ink);
-
   font-family: var(--sans);
   font-weight: 400;
 }
@@ -57,9 +55,9 @@ button {
 }
 
 
-/* =========================
+/* =========================================================
    HERO
-========================= */
+========================================================= */
 
 .hero {
   position: relative;
@@ -75,7 +73,7 @@ button {
   background:
     radial-gradient(
       circle at 50% 40%,
-      rgba(255, 255, 255, .45),
+      rgba(255, 255, 255, 0.45),
       transparent 55%
     ),
     var(--cream);
@@ -84,22 +82,18 @@ button {
 .hero::before,
 .hero::after {
   content: '';
-
   position: absolute;
-
   pointer-events: none;
 }
 
 .hero::before {
   inset: 24px;
-
-  border: 1px solid rgba(79, 84, 48, .28);
+  border: 1px solid rgba(79, 84, 48, 0.28);
 }
 
 .hero::after {
   inset: 31px;
-
-  border: 1px solid rgba(138, 99, 57, .16);
+  border: 1px solid rgba(138, 99, 57, 0.16);
 }
 
 .hero-content {
@@ -125,13 +119,13 @@ button {
 
   filter:
     contrast(1.03)
-    saturate(.92);
+    saturate(0.92);
 }
 
 
-/* =========================
+/* =========================================================
    TYPOGRAPHY
-========================= */
+========================================================= */
 
 .hero h1,
 .section h2,
@@ -150,10 +144,10 @@ button {
 
   color: var(--olive);
 
-  font-size: .72rem;
+  font-size: 0.72rem;
   font-weight: 600;
 
-  letter-spacing: .32em;
+  letter-spacing: 0.32em;
   text-transform: uppercase;
 }
 
@@ -163,13 +157,12 @@ button {
   color: var(--olive-dark);
 
   font-size: clamp(3rem, 8vw, 5.5rem);
-  line-height: .9;
+  line-height: 0.9;
 }
 
 .hero h1 em,
 .rsvp-section h2 em {
   color: var(--brown);
-
   font-style: normal;
 }
 
@@ -180,14 +173,14 @@ button {
 
   color: #646353;
 
-  font-size: .95rem;
+  font-size: 0.95rem;
   line-height: 1.9;
 }
 
 
-/* =========================
+/* =========================================================
    DIVIDER
-========================= */
+========================================================= */
 
 .hero-divider {
   display: flex;
@@ -211,14 +204,13 @@ button {
 
 .heart {
   color: var(--brown);
-
   font-size: 1.5rem;
 }
 
 
-/* =========================
+/* =========================================================
    HERO ACTIONS
-========================= */
+========================================================= */
 
 .hero-actions {
   display: flex;
@@ -231,9 +223,9 @@ button {
 }
 
 
-/* =========================
+/* =========================================================
    BUTTONS
-========================= */
+========================================================= */
 
 .button {
   display: inline-block;
@@ -247,17 +239,17 @@ button {
 
   text-decoration: none;
 
-  font-size: .72rem;
+  font-size: 0.72rem;
   font-weight: 600;
 
-  letter-spacing: .16em;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
 
   transition:
-    background .25s ease,
-    color .25s ease,
-    transform .25s ease,
-    border-color .25s ease;
+    background 0.25s ease,
+    color 0.25s ease,
+    transform 0.25s ease,
+    border-color 0.25s ease;
 }
 
 .button:hover {
@@ -266,7 +258,6 @@ button {
 
 .button-primary {
   background: var(--olive);
-
   color: var(--cream-light);
 }
 
@@ -286,9 +277,9 @@ button {
 }
 
 
-/* =========================
+/* =========================================================
    GENERAL SECTIONS
-========================= */
+========================================================= */
 
 .section {
   padding: 120px 24px;
@@ -321,9 +312,9 @@ button {
 }
 
 
-/* =========================
+/* =========================================================
    ONZE DAG
-========================= */
+========================================================= */
 
 .details-section {
   background: var(--cream);
@@ -342,7 +333,7 @@ button {
 
   color: #676657;
 
-  font-size: .85rem;
+  font-size: 0.85rem;
   line-height: 1.8;
 }
 
@@ -355,7 +346,7 @@ button {
 
   font-weight: 700;
 
-  letter-spacing: .08em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
@@ -372,7 +363,7 @@ button {
 
   gap: 1px;
 
-  background: rgba(79, 84, 48, .22);
+  background: rgba(79, 84, 48, 0.22);
 }
 
 .detail-card {
@@ -408,13 +399,12 @@ button {
 .detail-card p {
   color: #676657;
 
-  font-size: .85rem;
+  font-size: 0.85rem;
   line-height: 1.9;
 }
 
 .detail-card strong {
   color: var(--olive-dark);
-
   font-weight: 600;
 }
 
@@ -425,15 +415,15 @@ button {
 
   color: var(--brown);
 
-  font-size: .7rem;
+  font-size: 0.7rem;
   font-weight: 600;
 
-  letter-spacing: .1em;
+  letter-spacing: 0.1em;
 
   text-decoration: none;
   text-transform: uppercase;
 
-  transition: color .2s ease;
+  transition: color 0.2s ease;
 }
 
 .text-link:hover {
@@ -441,9 +431,9 @@ button {
 }
 
 
-/* =========================
+/* =========================================================
    PRACTICAL INFORMATION
-========================= */
+========================================================= */
 
 .practical-content {
   width: min(900px, 100%);
@@ -461,10 +451,10 @@ button {
 
   padding: 40px;
 
-  border-top: 1px solid rgba(79, 84, 48, .3);
-  border-bottom: 1px solid rgba(79, 84, 48, .15);
+  border-top: 1px solid rgba(79, 84, 48, 0.3);
+  border-bottom: 1px solid rgba(79, 84, 48, 0.15);
 
-  background: rgba(250, 247, 240, .35);
+  background: rgba(250, 247, 240, 0.35);
 }
 
 .practical-item h3 {
@@ -485,20 +475,19 @@ button {
 
   color: #676657;
 
-  font-size: .85rem;
+  font-size: 0.85rem;
   line-height: 1.9;
 }
 
 .practical-item strong {
   color: var(--olive-dark);
-
   font-weight: 600;
 }
 
 
-/* =========================
+/* =========================================================
    CALENDAR BUTTONS
-========================= */
+========================================================= */
 
 .calendar-buttons {
   display: flex;
@@ -522,16 +511,16 @@ button {
 
   padding: 0;
 
-  border: 1px solid rgba(79, 84, 48, .35);
+  border: 1px solid rgba(79, 84, 48, 0.35);
 
   background: var(--cream-light);
 
   border-radius: 10px;
 
   transition:
-    transform .2s ease,
-    border-color .2s ease,
-    background .2s ease;
+    transform 0.2s ease,
+    border-color 0.2s ease,
+    background 0.2s ease;
 }
 
 .calendar-button:hover,
@@ -563,7 +552,6 @@ button {
 
 .google-calendar-icon {
   border: 1px solid #777;
-
   background: #fff;
 }
 
@@ -584,7 +572,6 @@ button {
 
   top: 10px;
   left: 4px;
-
   right: 4px;
   bottom: 4px;
 
@@ -614,7 +601,6 @@ button {
   justify-content: center;
 
   background: #0078d4;
-
   color: white;
 
   font-family: var(--sans);
@@ -655,9 +641,9 @@ button {
 }
 
 
-/* =========================
+/* =========================================================
    COUNTDOWN
-========================= */
+========================================================= */
 
 .countdown-section {
   padding: 120px 24px;
@@ -693,9 +679,9 @@ button {
 }
 
 
-/* =========================
+/* =========================================================
    RSVP
-========================= */
+========================================================= */
 
 .rsvp-section {
   position: relative;
@@ -720,7 +706,7 @@ button {
 
   font-size: clamp(3rem, 7vw, 5rem);
 
-  line-height: .95;
+  line-height: 0.95;
 }
 
 .rsvp-intro {
@@ -730,7 +716,7 @@ button {
 
   color: #676657;
 
-  font-size: .9rem;
+  font-size: 0.9rem;
   line-height: 2;
 }
 
@@ -741,28 +727,20 @@ button {
 
   color: #8a8879;
 
-  font-size: .75rem;
+  font-size: 0.75rem;
   line-height: 1.8;
 }
 
 
-/* =========================
+/* =========================================================
    PERSONAL INVITATION CARD
-========================= */
+========================================================= */
 
 .rsvp-content {
   width: min(760px, 100%);
 
   margin: 0 auto;
 }
-
-
-/*
-   This is the "invitation" itself.
-
-   The card is deliberately narrow and elegant,
-   rather than looking like a normal website form.
-*/
 
 .invitation-card {
   width: min(680px, 100%);
@@ -774,24 +752,24 @@ button {
   background:
     linear-gradient(
       135deg,
-      rgba(138, 99, 57, .45),
-      rgba(79, 84, 48, .2),
-      rgba(138, 99, 57, .45)
+      rgba(138, 99, 57, 0.45),
+      rgba(79, 84, 48, 0.2),
+      rgba(138, 99, 57, 0.45)
     );
 
   box-shadow:
-    0 18px 45px rgba(54, 58, 32, .10);
+    0 18px 45px rgba(54, 58, 32, 0.10);
 
   transition:
-    transform .35s ease,
-    box-shadow .35s ease;
+    transform 0.35s ease,
+    box-shadow 0.35s ease;
 }
 
 .invitation-card:hover {
   transform: translateY(-3px);
 
   box-shadow:
-    0 22px 55px rgba(54, 58, 32, .14);
+    0 22px 55px rgba(54, 58, 32, 0.14);
 }
 
 .invitation-card-inner {
@@ -802,12 +780,12 @@ button {
   background:
     radial-gradient(
       circle at 50% 0%,
-      rgba(255, 255, 255, .8),
+      rgba(255, 255, 255, 0.8),
       transparent 55%
     ),
     var(--white);
 
-  border: 1px solid rgba(138, 99, 57, .12);
+  border: 1px solid rgba(138, 99, 57, 0.12);
 }
 
 
@@ -820,7 +798,7 @@ button {
 
   inset: 16px;
 
-  border: 1px solid rgba(138, 99, 57, .18);
+  border: 1px solid rgba(138, 99, 57, 0.18);
 
   pointer-events: none;
 }
@@ -832,19 +810,18 @@ button {
 
   inset: 22px;
 
-  border: 1px solid rgba(79, 84, 48, .08);
+  border: 1px solid rgba(79, 84, 48, 0.08);
 
   pointer-events: none;
 }
 
 
-/* Make sure the actual content stays above the frame */
+/* Make sure actual content stays above frame */
 
 .invitation-card-inner > * {
   position: relative;
   z-index: 2;
 }
-
 
 .invitation-card-decoration {
   margin-bottom: 22px;
@@ -858,11 +835,9 @@ button {
   line-height: 1;
 }
 
-
 .invitation-card .eyebrow {
   margin-bottom: 14px;
 }
-
 
 .invitation-card h3 {
   margin: 0;
@@ -874,7 +849,6 @@ button {
   line-height: 1;
 }
 
-
 .invitation-card-intro {
   width: min(470px, 100%);
 
@@ -882,15 +856,15 @@ button {
 
   color: #676657;
 
-  font-size: .88rem;
+  font-size: 0.88rem;
 
   line-height: 1.9;
 }
 
 
-/* =========================
+/* =========================================================
    INVITATION CODE PANEL
-========================= */
+========================================================= */
 
 .invitation-code-panel {
   margin-top: 8px;
@@ -899,16 +873,14 @@ button {
   transform: translateY(-8px);
 
   transition:
-    opacity .35s ease,
-    transform .35s ease;
+    opacity 0.35s ease,
+    transform 0.35s ease;
 }
 
 .invitation-code-panel.is-open {
   opacity: 1;
-
   transform: translateY(0);
 }
-
 
 .invitation-card-divider {
   display: flex;
@@ -937,7 +909,6 @@ button {
   font-size: 1.4rem;
 }
 
-
 .invitation-code-label {
   margin: 0 0 12px;
 
@@ -948,7 +919,6 @@ button {
   font-size: 1.45rem;
   font-weight: 600;
 }
-
 
 .rsvp-code-row {
   display: flex;
@@ -962,7 +932,6 @@ button {
   margin: 0 auto;
 }
 
-
 #invitationCode {
   min-width: 0;
   flex: 1;
@@ -971,30 +940,29 @@ button {
 
   padding: 0 16px;
 
-  border: 1px solid rgba(79, 84, 48, .35);
+  border: 1px solid rgba(79, 84, 48, 0.35);
 
-  background: rgba(250, 247, 240, .7);
+  background: rgba(250, 247, 240, 0.7);
 
   color: var(--olive-dark);
 
   font-family: var(--sans);
 
-  font-size: .82rem;
+  font-size: 0.82rem;
 
-  letter-spacing: .08em;
+  letter-spacing: 0.08em;
 
   outline: none;
 
   transition:
-    border-color .2s ease,
-    background .2s ease,
-    box-shadow .2s ease;
+    border-color 0.2s ease,
+    background 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 #invitationCode::placeholder {
   color: #9b998d;
-
-  letter-spacing: .08em;
+  letter-spacing: 0.08em;
 }
 
 #invitationCode:focus {
@@ -1003,20 +971,18 @@ button {
   background: var(--white);
 
   box-shadow:
-    0 0 0 3px rgba(79, 84, 48, .08);
+    0 0 0 3px rgba(79, 84, 48, 0.08);
 }
-
 
 .rsvp-code-row .button {
   min-height: 48px;
-
   white-space: nowrap;
 }
 
 
-/* =========================
+/* =========================================================
    RSVP FORM
-========================= */
+========================================================= */
 
 #rsvp-form-container {
   width: min(680px, 100%);
@@ -1027,10 +993,10 @@ button {
 
   background: var(--white);
 
-  border: 1px solid rgba(138, 99, 57, .18);
+  border: 1px solid rgba(138, 99, 57, 0.18);
 
   box-shadow:
-    0 15px 40px rgba(54, 58, 32, .08);
+    0 15px 40px rgba(54, 58, 32, 0.08);
 }
 
 #rsvp-form-container h3 {
@@ -1048,22 +1014,20 @@ button {
 
   color: #676657;
 
-  font-size: .85rem;
+  font-size: 0.85rem;
 
   line-height: 1.8;
 }
-
 
 .rsvp-guest {
   margin: 30px 0 0;
 
   padding: 28px 25px;
 
-  border-top: 1px solid rgba(79, 84, 48, .18);
+  border-top: 1px solid rgba(79, 84, 48, 0.18);
 
-  background: rgba(250, 247, 240, .35);
+  background: rgba(250, 247, 240, 0.35);
 }
-
 
 .rsvp-guest h4 {
   margin: 0 0 22px;
@@ -1075,7 +1039,6 @@ button {
   font-size: 1.7rem;
   font-weight: 600;
 }
-
 
 .rsvp-event {
   margin-top: 20px;
@@ -1092,7 +1055,6 @@ button {
   font-weight: 600;
 }
 
-
 .rsvp-event label {
   display: inline-flex;
   align-items: center;
@@ -1103,12 +1065,12 @@ button {
 
   color: #676657;
 
-  font-size: .82rem;
+  font-size: 0.82rem;
 
   cursor: pointer;
 }
 
-.rsvp-event input[type="radio"] {
+.rsvp-event input[type='radio'] {
   accent-color: var(--olive);
 
   width: 16px;
@@ -1117,15 +1079,14 @@ button {
   margin: 0;
 }
 
-
 #rsvp-form-container form > .button {
   margin-top: 35px;
 }
 
 
-/* =========================
+/* =========================================================
    RSVP MESSAGES
-========================= */
+========================================================= */
 
 .rsvp-message {
   max-width: 600px;
@@ -1134,33 +1095,215 @@ button {
 
   padding: 16px 20px;
 
-  font-size: .8rem;
+  font-size: 0.8rem;
 
   line-height: 1.7;
 }
 
-
 .rsvp-error {
-  border: 1px solid rgba(138, 99, 57, .35);
+  border: 1px solid rgba(138, 99, 57, 0.35);
 
-  background: rgba(138, 99, 57, .08);
+  background: rgba(138, 99, 57, 0.08);
 
   color: #74512d;
 }
 
-
 .rsvp-success {
-  border: 1px solid rgba(79, 84, 48, .25);
+  border: 1px solid rgba(79, 84, 48, 0.25);
 
-  background: rgba(79, 84, 48, .08);
+  background: rgba(79, 84, 48, 0.08);
 
   color: var(--olive-dark);
 }
 
 
-/* =========================
+/* =========================================================
+   RSVP DIETARY REQUIREMENTS
+========================================================= */
+
+.rsvp-dietary {
+  margin-top: 24px;
+  padding-top: 22px;
+
+  border-top: 1px solid rgba(79, 84, 48, 0.12);
+
+  text-align: left;
+}
+
+.rsvp-dietary h6 {
+  margin: 0 0 7px;
+
+  color: var(--olive-dark);
+
+  font-family: var(--serif);
+
+  font-size: 1.15rem;
+  font-weight: 600;
+}
+
+.rsvp-dietary > p {
+  margin: 0 0 14px;
+
+  color: #777566;
+
+  font-size: 0.76rem;
+
+  line-height: 1.7;
+}
+
+
+/* =========================================================
+   DIETARY OPTIONS
+========================================================= */
+
+.dietary-options {
+  display: grid;
+
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+
+  gap: 8px;
+}
+
+.dietary-option {
+  display: flex;
+  align-items: center;
+
+  gap: 9px;
+
+  min-height: 40px;
+
+  padding: 8px 10px;
+
+  border: 1px solid rgba(79, 84, 48, 0.15);
+
+  background:
+    rgba(250, 247, 240, 0.55);
+
+  color: #5f5e51;
+
+  font-size: 0.76rem;
+
+  cursor: pointer;
+
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease;
+}
+
+.dietary-option:hover {
+  border-color:
+    rgba(79, 84, 48, 0.35);
+
+  background:
+    var(--white);
+}
+
+.dietary-option input {
+  width: 16px;
+  height: 16px;
+
+  margin: 0;
+
+  accent-color:
+    var(--olive);
+
+  flex: 0 0 auto;
+}
+
+
+/* =========================================================
+   OTHER REQUIREMENT
+========================================================= */
+
+.dietary-other {
+  margin-top: 12px;
+
+  padding: 14px;
+
+  border:
+    1px solid rgba(138, 99, 57, 0.18);
+
+  background:
+    rgba(138, 99, 57, 0.05);
+}
+
+.dietary-other-label {
+  margin: 0 0 9px;
+
+  color: var(--olive-dark);
+
+  font-size: 0.74rem;
+  font-weight: 600;
+}
+
+.dietary-other-types {
+  display: flex;
+  flex-wrap: wrap;
+
+  gap: 16px;
+
+  margin-bottom: 11px;
+}
+
+.dietary-other-types label {
+  display: inline-flex;
+  align-items: center;
+
+  gap: 7px;
+
+  color: #676657;
+
+  font-size: 0.74rem;
+
+  cursor: pointer;
+}
+
+.dietary-other-types input {
+  width: 15px;
+  height: 15px;
+
+  margin: 0;
+
+  accent-color:
+    var(--olive);
+}
+
+.dietary-other-text {
+  width: 100%;
+  height: 44px;
+
+  padding: 0 12px;
+
+  border:
+    1px solid rgba(79, 84, 48, 0.25);
+
+  background:
+    var(--white);
+
+  color:
+    var(--olive-dark);
+
+  font-family:
+    var(--sans);
+
+  font-size: 0.76rem;
+
+  outline: none;
+}
+
+.dietary-other-text:focus {
+  border-color:
+    var(--olive);
+
+  box-shadow:
+    0 0 0 3px rgba(79, 84, 48, 0.08);
+}
+
+
+/* =========================================================
    FOOTER
-========================= */
+========================================================= */
 
 footer {
   padding: 70px 24px 90px;
@@ -1185,10 +1328,10 @@ footer p {
 
   color: var(--brown-light);
 
-  font-size: .7rem;
+  font-size: 0.7rem;
   font-weight: 500;
 
-  letter-spacing: .3em;
+  letter-spacing: 0.3em;
 
   text-transform: uppercase;
 }
@@ -1205,7 +1348,7 @@ footer p {
 }
 
 footer .footer-small {
-  color: rgba(244, 238, 226, .6);
+  color: rgba(244, 238, 226, 0.6);
 
   font-family: var(--script);
 
@@ -1217,9 +1360,9 @@ footer .footer-small {
 }
 
 
-/* =========================
+/* =========================================================
    MOBILE
-========================= */
+========================================================= */
 
 @media (max-width: 750px) {
 
@@ -1227,7 +1370,6 @@ footer .footer-small {
 
   .hero {
     min-height: auto;
-
     padding: 55px 18px;
   }
 
@@ -1245,7 +1387,6 @@ footer .footer-small {
 
   .wedding-logo {
     width: 95%;
-
     margin-bottom: 15px;
   }
 
@@ -1255,13 +1396,11 @@ footer .footer-small {
 
   .hero-actions {
     flex-direction: column;
-
     align-items: stretch;
   }
 
   .button {
     width: 100%;
-
     text-align: center;
   }
 
@@ -1277,8 +1416,7 @@ footer .footer-small {
 
   .adults-only {
     padding: 0 10px;
-
-    font-size: .8rem;
+    font-size: 0.8rem;
   }
 
 
@@ -1290,7 +1428,6 @@ footer .footer-small {
 
   .detail-card {
     min-height: auto;
-
     padding: 45px 30px;
   }
 
@@ -1299,9 +1436,7 @@ footer .footer-small {
 
   .practical-content {
     grid-template-columns: 1fr;
-
     gap: 30px;
-
     margin-top: 50px;
   }
 
@@ -1360,8 +1495,7 @@ footer .footer-small {
   }
 
   .invitation-card-intro {
-    font-size: .82rem;
-
+    font-size: 0.82rem;
     margin-top: 22px;
   }
 
@@ -1370,7 +1504,6 @@ footer .footer-small {
 
   .rsvp-code-row {
     flex-direction: column;
-
     gap: 12px;
   }
 
@@ -1399,8 +1532,19 @@ footer .footer-small {
 
   .rsvp-event label {
     display: flex;
-
     margin: 10px 0;
+  }
+
+
+  /* DIETARY */
+
+  .dietary-options {
+    grid-template-columns: 1fr;
+  }
+
+  .dietary-other-types {
+    flex-direction: column;
+    gap: 9px;
   }
 
 
@@ -1409,1417 +1553,4 @@ footer .footer-small {
   footer {
     padding: 60px 20px 75px;
   }
-
-}@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600&family=Parisienne&display=swap');
-
-:root {
-  --cream: #f7e9d4;
-  --cream-light: #faf7f0;
-
-  --olive: #4f5430;
-  --olive-dark: #363a20;
-  --olive-light: #777a58;
-
-  --brown: #8a6339;
-  --brown-light: #b29368;
-
-  --ink: #29291f;
-  --white: #fffdf8;
-
-  --serif: 'Cormorant Garamond', serif;
-  --sans: 'Montserrat', sans-serif;
-  --script: 'Parisienne', cursive;
-}
-
-
-/* =========================
-   RESET
-========================= */
-
-* {
-  box-sizing: border-box;
-}
-
-html {
-  scroll-behavior: smooth;
-}
-
-body {
-  margin: 0;
-
-  background: var(--cream);
-  color: var(--ink);
-
-  font-family: var(--sans);
-  font-weight: 400;
-}
-
-button,
-a {
-  font: inherit;
-}
-
-button {
-  cursor: pointer;
-}
-
-.site {
-  width: 100%;
-  overflow: hidden;
-}
-
-
-/* =========================
-   HERO
-========================= */
-
-.hero {
-  position: relative;
-
-  min-height: 100vh;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  padding: 80px 24px;
-
-  background:
-    radial-gradient(
-      circle at 50% 40%,
-      rgba(255, 255, 255, .45),
-      transparent 55%
-    ),
-    var(--cream);
-}
-
-.hero::before,
-.hero::after {
-  content: '';
-
-  position: absolute;
-
-  pointer-events: none;
-}
-
-.hero::before {
-  inset: 24px;
-
-  border: 1px solid rgba(79, 84, 48, .28);
-}
-
-.hero::after {
-  inset: 31px;
-
-  border: 1px solid rgba(138, 99, 57, .16);
-}
-
-.hero-content {
-  position: relative;
-  z-index: 2;
-
-  width: min(760px, 100%);
-
-  padding: 40px 20px;
-
-  text-align: center;
-}
-
-.wedding-logo {
-  display: block;
-
-  width: min(620px, 90vw);
-  height: auto;
-
-  margin: 0 auto 28px;
-
-  mix-blend-mode: multiply;
-
-  filter:
-    contrast(1.03)
-    saturate(.92);
-}
-
-
-/* =========================
-   TYPOGRAPHY
-========================= */
-
-.hero h1,
-.section h2,
-.countdown-section h2,
-.rsvp-section h2,
-.detail-card h3,
-.practical-item h3,
-.invitation-card h3,
-#rsvp-form-container h3 {
-  font-family: var(--serif);
-  font-weight: 500;
-}
-
-.eyebrow {
-  margin: 0 0 12px;
-
-  color: var(--olive);
-
-  font-size: .72rem;
-  font-weight: 600;
-
-  letter-spacing: .32em;
-  text-transform: uppercase;
-}
-
-.hero h1 {
-  margin: 12px 0;
-
-  color: var(--olive-dark);
-
-  font-size: clamp(3rem, 8vw, 5.5rem);
-  line-height: .9;
-}
-
-.hero h1 em,
-.rsvp-section h2 em {
-  color: var(--brown);
-
-  font-style: normal;
-}
-
-.intro {
-  max-width: 540px;
-
-  margin: 28px auto;
-
-  color: #646353;
-
-  font-size: .95rem;
-  line-height: 1.9;
-}
-
-
-/* =========================
-   DIVIDER
-========================= */
-
-.hero-divider {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  gap: 16px;
-
-  width: min(260px, 70%);
-
-  margin: 24px auto;
-}
-
-.hero-divider span:not(.heart) {
-  flex: 1;
-
-  height: 1px;
-
-  background: var(--brown-light);
-}
-
-.heart {
-  color: var(--brown);
-
-  font-size: 1.5rem;
-}
-
-
-/* =========================
-   HERO ACTIONS
-========================= */
-
-.hero-actions {
-  display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
-
-  gap: 12px;
-
-  margin-top: 34px;
-}
-
-
-/* =========================
-   BUTTONS
-========================= */
-
-.button {
-  display: inline-block;
-
-  border: 1px solid var(--olive);
-
-  padding: 14px 24px;
-
-  background: transparent;
-  color: var(--olive);
-
-  text-decoration: none;
-
-  font-size: .72rem;
-  font-weight: 600;
-
-  letter-spacing: .16em;
-  text-transform: uppercase;
-
-  transition:
-    background .25s ease,
-    color .25s ease,
-    transform .25s ease,
-    border-color .25s ease;
-}
-
-.button:hover {
-  transform: translateY(-2px);
-}
-
-.button-primary {
-  background: var(--olive);
-
-  color: var(--cream-light);
-}
-
-.button-primary:hover {
-  background: var(--olive-dark);
-  border-color: var(--olive-dark);
-}
-
-.button-secondary {
-  background: transparent;
-  color: var(--olive);
-}
-
-.button-secondary:hover {
-  background: var(--olive);
-  color: var(--cream-light);
-}
-
-
-/* =========================
-   GENERAL SECTIONS
-========================= */
-
-.section {
-  padding: 120px 24px;
-}
-
-.section-heading {
-  width: min(700px, 100%);
-
-  margin: 0 auto 65px;
-
-  text-align: center;
-}
-
-.section h2 {
-  margin: 0;
-
-  color: var(--olive-dark);
-
-  font-size: clamp(2.8rem, 6vw, 4.5rem);
-  line-height: 1;
-}
-
-.small-line {
-  width: 45px;
-  height: 1px;
-
-  margin: 24px auto 0;
-
-  background: var(--brown);
-}
-
-
-/* =========================
-   ONZE DAG
-========================= */
-
-.details-section {
-  background: var(--cream);
-}
-
-
-/* Adults only */
-
-.adults-only {
-  display: flex;
-  flex-direction: column;
-
-  max-width: 600px;
-
-  margin: 24px auto 0;
-
-  color: #676657;
-
-  font-size: .85rem;
-  line-height: 1.8;
-}
-
-.adults-only strong {
-  display: block;
-
-  margin-bottom: 4px;
-
-  color: var(--olive-dark);
-
-  font-weight: 700;
-
-  letter-spacing: .08em;
-  text-transform: uppercase;
-}
-
-
-/* Details grid */
-
-.details-grid {
-  width: min(900px, 100%);
-
-  margin: 0 auto;
-
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-
-  gap: 1px;
-
-  background: rgba(79, 84, 48, .22);
-}
-
-.detail-card {
-  position: relative;
-
-  min-height: 300px;
-
-  padding: 50px 35px;
-
-  background: var(--cream-light);
-
-  text-align: center;
-}
-
-.detail-icon {
-  margin-bottom: 18px;
-
-  color: var(--brown);
-
-  font-family: var(--serif);
-  font-size: 2.5rem;
-}
-
-.detail-card h3 {
-  margin: 0 0 18px;
-
-  color: var(--olive-dark);
-
-  font-size: 1.9rem;
-  font-weight: 600;
-}
-
-.detail-card p {
-  color: #676657;
-
-  font-size: .85rem;
-  line-height: 1.9;
-}
-
-.detail-card strong {
-  color: var(--olive-dark);
-
-  font-weight: 600;
-}
-
-.text-link {
-  display: inline-block;
-
-  margin-top: 8px;
-
-  color: var(--brown);
-
-  font-size: .7rem;
-  font-weight: 600;
-
-  letter-spacing: .1em;
-
-  text-decoration: none;
-  text-transform: uppercase;
-
-  transition: color .2s ease;
-}
-
-.text-link:hover {
-  color: var(--olive);
-}
-
-
-/* =========================
-   PRACTICAL INFORMATION
-========================= */
-
-.practical-content {
-  width: min(900px, 100%);
-
-  margin: 70px auto 0;
-
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-
-  gap: 60px;
-}
-
-.practical-item {
-  min-width: 0;
-
-  padding: 40px;
-
-  border-top: 1px solid rgba(79, 84, 48, .3);
-  border-bottom: 1px solid rgba(79, 84, 48, .15);
-
-  background: rgba(250, 247, 240, .35);
-}
-
-.practical-item h3 {
-  display: flex;
-  align-items: center;
-
-  gap: 12px;
-
-  margin: 0 0 18px;
-
-  color: var(--olive-dark);
-
-  font-size: 1.8rem;
-}
-
-.practical-item p {
-  margin: 0 0 20px;
-
-  color: #676657;
-
-  font-size: .85rem;
-  line-height: 1.9;
-}
-
-.practical-item strong {
-  color: var(--olive-dark);
-
-  font-weight: 600;
-}
-
-
-/* =========================
-   CALENDAR BUTTONS
-========================= */
-
-.calendar-buttons {
-  display: flex;
-  align-items: center;
-
-  gap: 12px;
-
-  margin-top: 22px;
-}
-
-.calendar-button,
-.calendar-icon-button {
-  position: relative;
-
-  width: 52px;
-  height: 52px;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  padding: 0;
-
-  border: 1px solid rgba(79, 84, 48, .35);
-
-  background: var(--cream-light);
-
-  border-radius: 10px;
-
-  transition:
-    transform .2s ease,
-    border-color .2s ease,
-    background .2s ease;
-}
-
-.calendar-button:hover,
-.calendar-icon-button:hover {
-  transform: translateY(-3px);
-
-  border-color: var(--olive);
-  background: var(--white);
-}
-
-
-/* Generic calendar icon */
-
-.calendar-icon {
-  position: relative;
-
-  display: block;
-
-  width: 30px;
-  height: 30px;
-
-  overflow: hidden;
-
-  border-radius: 6px;
-}
-
-
-/* Google Calendar */
-
-.google-calendar-icon {
-  border: 1px solid #777;
-
-  background: #fff;
-}
-
-.google-calendar-icon .calendar-icon-top {
-  position: absolute;
-
-  top: 0;
-  left: 0;
-
-  width: 100%;
-  height: 8px;
-
-  background: #4285f4;
-}
-
-.google-calendar-icon .calendar-icon-body {
-  position: absolute;
-
-  top: 10px;
-  left: 4px;
-
-  right: 4px;
-  bottom: 4px;
-
-  display: grid;
-
-  grid-template-columns: repeat(3, 1fr);
-
-  gap: 2px;
-}
-
-.google-calendar-icon .calendar-icon-body span {
-  display: block;
-
-  min-height: 4px;
-
-  border-radius: 1px;
-
-  background: #4285f4;
-}
-
-
-/* Outlook */
-
-.outlook-calendar-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  background: #0078d4;
-
-  color: white;
-
-  font-family: var(--sans);
-  font-size: 17px;
-  font-weight: 600;
-}
-
-.calendar-icon-letter {
-  line-height: 1;
-}
-
-
-/* Apple Calendar */
-
-.apple-calendar-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  border: 1px solid #d0d0d0;
-
-  background:
-    linear-gradient(
-      to bottom,
-      #e64b4b 0 28%,
-      #ffffff 28% 100%
-    );
-
-  color: #333;
-
-  font-family: var(--sans);
-  font-size: 16px;
-  font-weight: 600;
-}
-
-.apple-calendar-date {
-  margin-top: 7px;
-}
-
-
-/* =========================
-   COUNTDOWN
-========================= */
-
-.countdown-section {
-  padding: 120px 24px;
-
-  background: var(--cream);
-
-  text-align: center;
-}
-
-.countdown-inner {
-  width: min(800px, 100%);
-
-  margin: auto;
-}
-
-.countdown-section h2 {
-  margin: 0;
-
-  color: var(--olive-dark);
-
-  font-size: clamp(2.5rem, 6vw, 4rem);
-}
-
-.countdown {
-  margin: 35px 0;
-
-  color: var(--brown);
-
-  font-family: var(--serif);
-
-  font-size: clamp(1.7rem, 4vw, 2.6rem);
-  font-weight: 500;
-}
-
-
-/* =========================
-   RSVP
-========================= */
-
-.rsvp-section {
-  position: relative;
-
-  padding: 140px 24px;
-
-  background: var(--cream-light);
-
-  text-align: center;
-}
-
-.rsvp-inner {
-  width: min(760px, 100%);
-
-  margin: auto;
-}
-
-.rsvp-section h2 {
-  margin: 15px 0 0;
-
-  color: var(--olive-dark);
-
-  font-size: clamp(3rem, 7vw, 5rem);
-
-  line-height: .95;
-}
-
-.rsvp-intro {
-  max-width: 620px;
-
-  margin: 35px auto 0;
-
-  color: #676657;
-
-  font-size: .9rem;
-  line-height: 2;
-}
-
-.rsvp-note {
-  max-width: 600px;
-
-  margin: 20px auto 0;
-
-  color: #8a8879;
-
-  font-size: .75rem;
-  line-height: 1.8;
-}
-
-
-/* =========================
-   PERSONAL INVITATION CARD
-========================= */
-
-.rsvp-content {
-  width: min(760px, 100%);
-
-  margin: 0 auto;
-}
-
-
-/*
-   This is the "invitation" itself.
-
-   The card is deliberately narrow and elegant,
-   rather than looking like a normal website form.
-*/
-
-.invitation-card {
-  width: min(680px, 100%);
-
-  margin: 0 auto;
-
-  padding: 1px;
-
-  background:
-    linear-gradient(
-      135deg,
-      rgba(138, 99, 57, .45),
-      rgba(79, 84, 48, .2),
-      rgba(138, 99, 57, .45)
-    );
-
-  box-shadow:
-    0 18px 45px rgba(54, 58, 32, .10);
-
-  transition:
-    transform .35s ease,
-    box-shadow .35s ease;
-}
-
-.invitation-card:hover {
-  transform: translateY(-3px);
-
-  box-shadow:
-    0 22px 55px rgba(54, 58, 32, .14);
-}
-
-.invitation-card-inner {
-  position: relative;
-
-  padding: 58px 55px 62px;
-
-  background:
-    radial-gradient(
-      circle at 50% 0%,
-      rgba(255, 255, 255, .8),
-      transparent 55%
-    ),
-    var(--white);
-
-  border: 1px solid rgba(138, 99, 57, .12);
-}
-
-
-/* Decorative inner frame */
-
-.invitation-card-inner::before {
-  content: '';
-
-  position: absolute;
-
-  inset: 16px;
-
-  border: 1px solid rgba(138, 99, 57, .18);
-
-  pointer-events: none;
-}
-
-.invitation-card-inner::after {
-  content: '';
-
-  position: absolute;
-
-  inset: 22px;
-
-  border: 1px solid rgba(79, 84, 48, .08);
-
-  pointer-events: none;
-}
-
-
-/* Make sure the actual content stays above the frame */
-
-.invitation-card-inner > * {
-  position: relative;
-  z-index: 2;
-}
-
-
-.invitation-card-decoration {
-  margin-bottom: 22px;
-
-  color: var(--brown);
-
-  font-family: var(--script);
-
-  font-size: 2.8rem;
-
-  line-height: 1;
-}
-
-
-.invitation-card .eyebrow {
-  margin-bottom: 14px;
-}
-
-
-.invitation-card h3 {
-  margin: 0;
-
-  color: var(--olive-dark);
-
-  font-size: clamp(2.5rem, 6vw, 3.7rem);
-
-  line-height: 1;
-}
-
-
-.invitation-card-intro {
-  width: min(470px, 100%);
-
-  margin: 25px auto 32px;
-
-  color: #676657;
-
-  font-size: .88rem;
-
-  line-height: 1.9;
-}
-
-
-/* =========================
-   INVITATION CODE PANEL
-========================= */
-
-.invitation-code-panel {
-  margin-top: 8px;
-
-  opacity: 0;
-  transform: translateY(-8px);
-
-  transition:
-    opacity .35s ease,
-    transform .35s ease;
-}
-
-.invitation-code-panel.is-open {
-  opacity: 1;
-
-  transform: translateY(0);
-}
-
-
-.invitation-card-divider {
-  display: flex;
-  align-items: center;
-
-  gap: 12px;
-
-  width: min(280px, 80%);
-
-  margin: 30px auto 28px;
-}
-
-.invitation-card-divider span:not(:nth-child(2)) {
-  flex: 1;
-
-  height: 1px;
-
-  background: var(--brown-light);
-}
-
-.invitation-card-divider span:nth-child(2) {
-  color: var(--brown);
-
-  font-family: var(--script);
-
-  font-size: 1.4rem;
-}
-
-
-.invitation-code-label {
-  margin: 0 0 12px;
-
-  color: var(--olive-dark);
-
-  font-family: var(--serif);
-
-  font-size: 1.45rem;
-  font-weight: 600;
-}
-
-
-.rsvp-code-row {
-  display: flex;
-  align-items: stretch;
-  justify-content: center;
-
-  gap: 10px;
-
-  width: min(510px, 100%);
-
-  margin: 0 auto;
-}
-
-
-#invitationCode {
-  min-width: 0;
-  flex: 1;
-
-  height: 48px;
-
-  padding: 0 16px;
-
-  border: 1px solid rgba(79, 84, 48, .35);
-
-  background: rgba(250, 247, 240, .7);
-
-  color: var(--olive-dark);
-
-  font-family: var(--sans);
-
-  font-size: .82rem;
-
-  letter-spacing: .08em;
-
-  outline: none;
-
-  transition:
-    border-color .2s ease,
-    background .2s ease,
-    box-shadow .2s ease;
-}
-
-#invitationCode::placeholder {
-  color: #9b998d;
-
-  letter-spacing: .08em;
-}
-
-#invitationCode:focus {
-  border-color: var(--olive);
-
-  background: var(--white);
-
-  box-shadow:
-    0 0 0 3px rgba(79, 84, 48, .08);
-}
-
-
-.rsvp-code-row .button {
-  min-height: 48px;
-
-  white-space: nowrap;
-}
-
-
-/* =========================
-   RSVP FORM
-========================= */
-
-#rsvp-form-container {
-  width: min(680px, 100%);
-
-  margin: 35px auto 0;
-
-  padding: 45px 40px;
-
-  background: var(--white);
-
-  border: 1px solid rgba(138, 99, 57, .18);
-
-  box-shadow:
-    0 15px 40px rgba(54, 58, 32, .08);
-}
-
-#rsvp-form-container h3 {
-  margin: 0 0 12px;
-
-  color: var(--olive-dark);
-
-  font-size: 2.5rem;
-
-  line-height: 1;
-}
-
-#rsvp-form-container > form > p {
-  margin: 0 auto 35px;
-
-  color: #676657;
-
-  font-size: .85rem;
-
-  line-height: 1.8;
-}
-
-
-.rsvp-guest {
-  margin: 30px 0 0;
-
-  padding: 28px 25px;
-
-  border-top: 1px solid rgba(79, 84, 48, .18);
-
-  background: rgba(250, 247, 240, .35);
-}
-
-
-.rsvp-guest h4 {
-  margin: 0 0 22px;
-
-  color: var(--olive-dark);
-
-  font-family: var(--serif);
-
-  font-size: 1.7rem;
-  font-weight: 600;
-}
-
-
-.rsvp-event {
-  margin-top: 20px;
-}
-
-.rsvp-event h5 {
-  margin: 0 0 12px;
-
-  color: var(--olive-dark);
-
-  font-family: var(--serif);
-
-  font-size: 1.25rem;
-  font-weight: 600;
-}
-
-
-.rsvp-event label {
-  display: inline-flex;
-  align-items: center;
-
-  gap: 8px;
-
-  margin-right: 20px;
-
-  color: #676657;
-
-  font-size: .82rem;
-
-  cursor: pointer;
-}
-
-.rsvp-event input[type="radio"] {
-  accent-color: var(--olive);
-
-  width: 16px;
-  height: 16px;
-
-  margin: 0;
-}
-
-
-#rsvp-form-container form > .button {
-  margin-top: 35px;
-}
-
-
-/* =========================
-   RSVP MESSAGES
-========================= */
-
-.rsvp-message {
-  max-width: 600px;
-
-  margin: 25px auto 0;
-
-  padding: 16px 20px;
-
-  font-size: .8rem;
-
-  line-height: 1.7;
-}
-
-
-.rsvp-error {
-  border: 1px solid rgba(138, 99, 57, .35);
-
-  background: rgba(138, 99, 57, .08);
-
-  color: #74512d;
-}
-
-
-.rsvp-success {
-  border: 1px solid rgba(79, 84, 48, .25);
-
-  background: rgba(79, 84, 48, .08);
-
-  color: var(--olive-dark);
-}
-
-
-/* =========================
-   FOOTER
-========================= */
-
-footer {
-  padding: 70px 24px 90px;
-
-  background: var(--olive-dark);
-
-  color: var(--cream);
-
-  text-align: center;
-}
-
-.footer-decoration {
-  margin-bottom: 30px;
-
-  color: var(--brown-light);
-
-  font-size: 1.4rem;
-}
-
-footer p {
-  margin: 10px 0;
-
-  color: var(--brown-light);
-
-  font-size: .7rem;
-  font-weight: 500;
-
-  letter-spacing: .3em;
-
-  text-transform: uppercase;
-}
-
-.footer-line {
-  display: block;
-
-  width: 40px;
-  height: 1px;
-
-  margin: 25px auto;
-
-  background: var(--brown-light);
-}
-
-footer .footer-small {
-  color: rgba(244, 238, 226, .6);
-
-  font-family: var(--script);
-
-  font-size: 1.3rem;
-
-  letter-spacing: normal;
-
-  text-transform: none;
-}
-
-
-/* =========================
-   MOBILE
-========================= */
-
-@media (max-width: 750px) {
-
-  /* HERO */
-
-  .hero {
-    min-height: auto;
-
-    padding: 55px 18px;
-  }
-
-  .hero::before {
-    inset: 12px;
-  }
-
-  .hero::after {
-    inset: 18px;
-  }
-
-  .hero-content {
-    padding: 30px 10px;
-  }
-
-  .wedding-logo {
-    width: 95%;
-
-    margin-bottom: 15px;
-  }
-
-  .hero h1 {
-    font-size: clamp(3rem, 15vw, 4.5rem);
-  }
-
-  .hero-actions {
-    flex-direction: column;
-
-    align-items: stretch;
-  }
-
-  .button {
-    width: 100%;
-
-    text-align: center;
-  }
-
-
-  /* SECTIONS */
-
-  .section {
-    padding: 85px 18px;
-  }
-
-
-  /* ADULTS ONLY */
-
-  .adults-only {
-    padding: 0 10px;
-
-    font-size: .8rem;
-  }
-
-
-  /* DETAILS */
-
-  .details-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .detail-card {
-    min-height: auto;
-
-    padding: 45px 30px;
-  }
-
-
-  /* PRACTICAL */
-
-  .practical-content {
-    grid-template-columns: 1fr;
-
-    gap: 30px;
-
-    margin-top: 50px;
-  }
-
-  .practical-item {
-    padding: 30px 20px;
-  }
-
-
-  /* CALENDAR */
-
-  .calendar-buttons {
-    gap: 10px;
-  }
-
-  .calendar-button,
-  .calendar-icon-button {
-    width: 50px;
-    height: 50px;
-  }
-
-
-  /* COUNTDOWN */
-
-  .countdown-section {
-    padding: 85px 18px;
-  }
-
-
-  /* RSVP */
-
-  .rsvp-section {
-    padding: 100px 20px;
-  }
-
-  .rsvp-section h2 {
-    font-size: clamp(3rem, 13vw, 4.5rem);
-  }
-
-
-  /* INVITATION CARD */
-
-  .invitation-card-inner {
-    padding: 48px 28px 52px;
-  }
-
-  .invitation-card-inner::before {
-    inset: 11px;
-  }
-
-  .invitation-card-inner::after {
-    inset: 16px;
-  }
-
-  .invitation-card h3 {
-    font-size: clamp(2.5rem, 13vw, 3.4rem);
-  }
-
-  .invitation-card-intro {
-    font-size: .82rem;
-
-    margin-top: 22px;
-  }
-
-
-  /* CODE */
-
-  .rsvp-code-row {
-    flex-direction: column;
-
-    gap: 12px;
-  }
-
-  #invitationCode {
-    width: 100%;
-  }
-
-  .rsvp-code-row .button {
-    width: 100%;
-  }
-
-
-  /* RSVP FORM */
-
-  #rsvp-form-container {
-    padding: 35px 22px;
-  }
-
-  #rsvp-form-container h3 {
-    font-size: 2.2rem;
-  }
-
-  .rsvp-guest {
-    padding: 25px 18px;
-  }
-
-  .rsvp-event label {
-    display: flex;
-
-    margin: 10px 0;
-  }
-
-
-  /* FOOTER */
-
-  footer {
-    padding: 60px 20px 75px;
-  }
-
 }

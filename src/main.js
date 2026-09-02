@@ -3,7 +3,7 @@ import './style.css'
 const weddingDate = new Date('2027-10-02T00:00:00')
 
 const calendarEvent = {
-  title: 'Margo & Glenn \u2014 Onze trouwdag',
+  title: 'Margo & Glenn — Onze trouwdag',
   location: 'Hottentot Hoeve, Cassenbroek 1, 2820 Bonheiden',
   description: 'Trouwdag van Margo & Glenn.',
   startDate: '20271002',
@@ -18,6 +18,7 @@ const calendarEvent = {
 ========================= */
 
 function createCalendarFile() {
+
   const event = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
@@ -53,18 +54,43 @@ function createCalendarFile() {
   URL.revokeObjectURL(url)
 }
 
+
 function formatICSDate(date) {
-  const year = date.getUTCFullYear()
-  const month = String(date.getUTCMonth() + 1).padStart(2, '0')
-  const day = String(date.getUTCDate()).padStart(2, '0')
-  const hours = String(date.getUTCHours()).padStart(2, '0')
-  const minutes = String(date.getUTCMinutes()).padStart(2, '0')
-  const seconds = String(date.getUTCSeconds()).padStart(2, '0')
+
+  const year =
+    date.getUTCFullYear()
+
+  const month =
+    String(
+      date.getUTCMonth() + 1
+    ).padStart(2, '0')
+
+  const day =
+    String(
+      date.getUTCDate()
+    ).padStart(2, '0')
+
+  const hours =
+    String(
+      date.getUTCHours()
+    ).padStart(2, '0')
+
+  const minutes =
+    String(
+      date.getUTCMinutes()
+    ).padStart(2, '0')
+
+  const seconds =
+    String(
+      date.getUTCSeconds()
+    ).padStart(2, '0')
 
   return `${year}${month}${day}T${hours}${minutes}${seconds}Z`
 }
 
+
 function escapeICS(value) {
+
   return String(value)
     .replace(/\\/g, '\\\\')
     .replace(/\r?\n/g, '\\n')
@@ -78,26 +104,40 @@ function escapeICS(value) {
 ========================= */
 
 function formatCountdown() {
+
   const now = new Date()
-  const difference = weddingDate - now
+
+  const difference =
+    weddingDate - now
+
 
   if (difference <= 0) {
-    return 'Vandaag is onze dag \u2661'
+    return 'Vandaag is onze dag ♡'
   }
 
-  const days = Math.floor(
-    difference / (1000 * 60 * 60 * 24)
-  )
 
-  const hours = Math.floor(
-    (difference / (1000 * 60 * 60)) % 24
-  )
+  const days =
+    Math.floor(
+      difference /
+      (1000 * 60 * 60 * 24)
+    )
 
-  const minutes = Math.floor(
-    (difference / (1000 * 60)) % 60
-  )
 
-  return `${days} dagen \u00b7 ${hours} uur \u00b7 ${minutes} minuten`
+  const hours =
+    Math.floor(
+      (difference /
+        (1000 * 60 * 60)) % 24
+    )
+
+
+  const minutes =
+    Math.floor(
+      (difference /
+        (1000 * 60)) % 60
+    )
+
+
+  return `${days} dagen · ${hours} uur · ${minutes} minuten`
 }
 
 
@@ -106,15 +146,25 @@ function formatCountdown() {
 ========================= */
 
 function openGoogleCalendar() {
+
   const url =
     'https://calendar.google.com/calendar/render' +
     '?action=TEMPLATE' +
-    `&text=${encodeURIComponent(calendarEvent.title)}` +
+    `&text=${encodeURIComponent(
+      calendarEvent.title
+    )}` +
     `&dates=${calendarEvent.startDate}/${calendarEvent.endDate}` +
-    `&location=${encodeURIComponent(calendarEvent.location)}` +
-    `&details=${encodeURIComponent(calendarEvent.description)}`
+    `&location=${encodeURIComponent(
+      calendarEvent.location
+    )}` +
+    `&details=${encodeURIComponent(
+      calendarEvent.description
+    )}`
 
-  window.open(url, '_blank')
+  window.open(
+    url,
+    '_blank'
+  )
 }
 
 
@@ -123,15 +173,29 @@ function openGoogleCalendar() {
 ========================= */
 
 function openOutlookCalendar() {
+
   const url =
     'https://outlook.live.com/calendar/0/deeplink/compose' +
-    `?subject=${encodeURIComponent(calendarEvent.title)}` +
-    `&startdt=${encodeURIComponent(calendarEvent.startDateTime)}` +
-    `&enddt=${encodeURIComponent(calendarEvent.endDateTime)}` +
-    `&location=${encodeURIComponent(calendarEvent.location)}` +
-    `&body=${encodeURIComponent(calendarEvent.description)}`
+    `?subject=${encodeURIComponent(
+      calendarEvent.title
+    )}` +
+    `&startdt=${encodeURIComponent(
+      calendarEvent.startDateTime
+    )}` +
+    `&enddt=${encodeURIComponent(
+      calendarEvent.endDateTime
+    )}` +
+    `&location=${encodeURIComponent(
+      calendarEvent.location
+    )}` +
+    `&body=${encodeURIComponent(
+      calendarEvent.description
+    )}`
 
-  window.open(url, '_blank')
+  window.open(
+    url,
+    '_blank'
+  )
 }
 
 
@@ -140,6 +204,7 @@ function openOutlookCalendar() {
 ========================= */
 
 document.querySelector('#app').innerHTML = `
+
   <main class="site">
 
     <!-- =========================
@@ -149,6 +214,7 @@ document.querySelector('#app').innerHTML = `
     <section class="hero">
 
       <div class="hero-decoration hero-decoration-left"></div>
+
       <div class="hero-decoration hero-decoration-right"></div>
 
       <div class="hero-content">
@@ -156,16 +222,22 @@ document.querySelector('#app').innerHTML = `
         <img
           class="wedding-logo"
           src="/logo.png"
-          alt="Margo & Glenn \u2014 2 oktober 2027"
+          alt="Margo & Glenn — 2 oktober 2027"
         />
 
         <div class="hero-divider">
+
           <span></span>
-          <span class="heart">&#9825;</span>
+
+          <span class="heart">♡</span>
+
           <span></span>
+
         </div>
 
-        <p class="eyebrow">Onze trouwdag</p>
+        <p class="eyebrow">
+          Onze trouwdag
+        </p>
 
         <h1>
           Een dag om te<br />
@@ -179,7 +251,10 @@ document.querySelector('#app').innerHTML = `
 
         <div class="hero-actions">
 
-          <a href="#rsvp" class="button button-primary">
+          <a
+            href="#rsvp"
+            class="button button-primary"
+          >
             RSVP
           </a>
 
@@ -202,19 +277,28 @@ document.querySelector('#app').innerHTML = `
          ONZE DAG
     ========================== -->
 
-    <section id="details" class="section details-section">
+    <section
+      id="details"
+      class="section details-section"
+    >
 
       <div class="section-heading">
 
-        <p class="eyebrow">02 &#183; 10 &#183; 2027</p>
+        <p class="eyebrow">
+          02 · 10 · 2027
+        </p>
 
-        <h2>Onze dag</h2>
+        <h2>
+          Onze dag
+        </h2>
 
         <div class="small-line"></div>
 
         <div class="adults-only">
 
-          <strong>Adults only</strong>
+          <strong>
+            Adults only
+          </strong>
 
           <p>
             Een avond zonder zorgen voor iedereen.<br />
@@ -228,32 +312,40 @@ document.querySelector('#app').innerHTML = `
 
       <div class="details-grid">
 
-        <!-- WANNEER -->
-
         <article class="detail-card">
 
-          <div class="detail-icon">&#9825;</div>
+          <div class="detail-icon">
+            ♡
+          </div>
 
-          <h3>Wanneer</h3>
+          <h3>
+            Wanneer
+          </h3>
 
           <p>
             Zaterdag<br />
-            <strong>2 oktober 2027</strong>
+            <strong>
+              2 oktober 2027
+            </strong>
           </p>
 
         </article>
 
 
-        <!-- WAAR -->
-
         <article class="detail-card">
 
-          <div class="detail-icon">&#8982;</div>
+          <div class="detail-icon">
+            ⌖
+          </div>
 
-          <h3>Waar</h3>
+          <h3>
+            Waar
+          </h3>
 
           <p>
-            <strong>Hottentot Hoeve</strong><br />
+            <strong>
+              Hottentot Hoeve
+            </strong><br />
             Cassenbroek 1<br />
             2820 Bonheiden
           </p>
@@ -264,7 +356,7 @@ document.querySelector('#app').innerHTML = `
             target="_blank"
             rel="noopener noreferrer"
           >
-            Bekijk de locatie &#8594;
+            Bekijk de locatie →
           </a>
 
         </article>
@@ -282,11 +374,18 @@ document.querySelector('#app').innerHTML = `
 
       <div class="countdown-inner">
 
-        <p class="eyebrow">En tot dan...</p>
+        <p class="eyebrow">
+          En tot dan...
+        </p>
 
-        <h2>We tellen samen af</h2>
+        <h2>
+          We tellen samen af
+        </h2>
 
-        <div id="countdown" class="countdown">
+        <div
+          id="countdown"
+          class="countdown"
+        >
           ${formatCountdown()}
         </div>
 
@@ -294,7 +393,9 @@ document.querySelector('#app').innerHTML = `
 
           <span></span>
 
-          <span class="heart">&#9825;</span>
+          <span class="heart">
+            ♡
+          </span>
 
           <span></span>
 
@@ -313,9 +414,13 @@ document.querySelector('#app').innerHTML = `
 
       <div class="section-heading">
 
-        <p class="eyebrow">Praktisch</p>
+        <p class="eyebrow">
+          Praktisch
+        </p>
 
-        <h2>Alle details op &eacute;&eacute;n plek</h2>
+        <h2>
+          Alle details op één plek
+        </h2>
 
         <div class="small-line"></div>
 
@@ -324,14 +429,16 @@ document.querySelector('#app').innerHTML = `
 
       <div class="practical-content">
 
-        <!-- LOCATIE -->
-
         <div class="practical-item">
 
-          <h3>&#128205; Locatie</h3>
+          <h3>
+            📍 Locatie
+          </h3>
 
           <p>
-            <strong>Hottentot Hoeve</strong><br />
+            <strong>
+              Hottentot Hoeve
+            </strong><br />
             Cassenbroek 1<br />
             2820 Bonheiden
           </p>
@@ -348,11 +455,11 @@ document.querySelector('#app').innerHTML = `
         </div>
 
 
-        <!-- KALENDER -->
-
         <div class="practical-item">
 
-          <h3>&#128197; Kalender</h3>
+          <h3>
+            📅 Kalender
+          </h3>
 
           <p>
             Zet onze trouwdag alvast in je agenda
@@ -368,7 +475,7 @@ document.querySelector('#app').innerHTML = `
               aria-label="Download kalenderbestand"
               title="Download kalenderbestand"
             >
-              &#128197;
+              📅
             </button>
 
             <button
@@ -410,7 +517,7 @@ document.querySelector('#app').innerHTML = `
           </div>
 
           <p class="calendar-help">
-            &#128197; = kalenderbestand &#183; G = Google &#183; O = Outlook &#183; A = Apple
+            📅 = kalenderbestand · G = Google · O = Outlook · A = Apple
           </p>
 
         </div>
@@ -424,13 +531,20 @@ document.querySelector('#app').innerHTML = `
          RSVP
     ========================== -->
 
-    <section id="rsvp" class="section rsvp-section">
+    <section
+      id="rsvp"
+      class="section rsvp-section"
+    >
 
       <div class="section-heading">
 
-        <p class="eyebrow">RSVP</p>
+        <p class="eyebrow">
+          RSVP
+        </p>
 
-        <h2>Laat ons weten of je erbij bent</h2>
+        <h2>
+          Laat ons weten of je erbij bent
+        </h2>
 
         <div class="small-line"></div>
 
@@ -441,14 +555,19 @@ document.querySelector('#app').innerHTML = `
 
         <div id="rsvp-app">
 
-          <!-- PERSOONLIJKE UITNODIGING -->
+          <!-- =====================
+               UITNODIGING
+          ====================== -->
 
-          <div class="invitation-card" id="invitationCard">
+          <div
+            class="invitation-card"
+            id="invitationCard"
+          >
 
             <div class="invitation-card-inner">
 
               <div class="invitation-card-decoration">
-                &#9825;
+                ♡
               </div>
 
               <p class="eyebrow">
@@ -473,7 +592,9 @@ document.querySelector('#app').innerHTML = `
               </button>
 
 
-              <!-- CODE FORMULIER -->
+              <!-- =====================
+                   CODE FORMULIER
+              ====================== -->
 
               <div
                 id="invitation-code-panel"
@@ -485,7 +606,9 @@ document.querySelector('#app').innerHTML = `
 
                   <span></span>
 
-                  <span>&#9825;</span>
+                  <span>
+                    ♡
+                  </span>
 
                   <span></span>
 
@@ -495,7 +618,9 @@ document.querySelector('#app').innerHTML = `
                   Persoonlijke uitnodigingscode
                 </p>
 
-                <form id="invitationForm">
+                <form
+                  id="invitationForm"
+                >
 
                   <div class="rsvp-code-row">
 
@@ -518,12 +643,6 @@ document.querySelector('#app').innerHTML = `
 
                   </div>
 
-                  <p
-                    id="invitationError"
-                    class="rsvp-message rsvp-error"
-                    hidden
-                  ></p>
-
                 </form>
 
               </div>
@@ -533,15 +652,61 @@ document.querySelector('#app').innerHTML = `
           </div>
 
 
-          <!-- RSVP FORM -->
+          <!-- =====================
+               ERROR
+          ====================== -->
 
           <div
-            id="rsvp-form-container"
+            id="invitationError"
+            class="rsvp-message rsvp-error"
             hidden
           ></div>
 
 
-          <!-- SUCCESS -->
+          <!-- =====================
+               RSVP FORM
+          ====================== -->
+
+          <div
+            id="rsvp-form-container"
+            hidden
+          >
+
+            <div class="rsvp-invitation-heading">
+
+              <p class="eyebrow">
+                Welkom
+              </p>
+
+              <h3 id="invitationHeading"></h3>
+
+              <p id="invitationIntro"></p>
+
+            </div>
+
+            <form id="rsvpForm">
+
+              <div id="guestList"></div>
+
+              <div class="rsvp-submit-area">
+
+                <button
+                  type="submit"
+                  class="button button-primary"
+                >
+                  Bevestig RSVP
+                </button>
+
+              </div>
+
+            </form>
+
+          </div>
+
+
+          <!-- =====================
+               SUCCESS
+          ====================== -->
 
           <div
             id="rsvp-success"
@@ -560,21 +725,27 @@ document.querySelector('#app').innerHTML = `
          FOOTER
     ========================== -->
 
-    <footer>
+    <footer class="footer">
 
-      <div class="footer-decoration">
-        &#10022;
+      <div class="footer-divider">
+
+        <span></span>
+
+        <span class="heart">
+          ♡
+        </span>
+
+        <span></span>
+
       </div>
 
       <p>
-        02 &#183; 10 &#183; 2027
+        Margo &amp; Glenn
       </p>
 
-      <span class="footer-line"></span>
-
-      <p class="footer-small">
-        With love, Margo &amp; Glenn
-      </p>
+      <small>
+        02 · 10 · 2027
+      </small>
 
     </footer>
 
@@ -583,75 +754,103 @@ document.querySelector('#app').innerHTML = `
 
 
 /* =========================
-   INVITATION CARD
+   RSVP STATE
 ========================= */
 
-document
-  .querySelector('#openInvitationButton')
-  .addEventListener('click', () => {
-
-    const panel = document.querySelector(
-      '#invitation-code-panel'
-    )
-
-    const button = document.querySelector(
-      '#openInvitationButton'
-    )
-
-    panel.hidden = false
-    button.hidden = true
-
-    requestAnimationFrame(() => {
-      panel.classList.add('is-open')
-    })
-
-    setTimeout(() => {
-      document
-        .querySelector('#invitationCode')
-        ?.focus()
-    }, 150)
-  })
+let currentInvitationCode = null
+let currentInvitation = null
 
 
 /* =========================
-   RSVP / INVITATION
+   LOAD INVITATION
 ========================= */
 
 async function loadInvitation(code) {
 
-  const errorElement = document.querySelector(
-    '#invitationError'
-  )
+  const errorElement =
+    document.querySelector(
+      '#invitationError'
+    )
 
-  const formContainer = document.querySelector(
-    '#rsvp-form-container'
-  )
+  const invitationCard =
+    document.querySelector(
+      '#invitationCard'
+    )
+
+  const formContainer =
+    document.querySelector(
+      '#rsvp-form-container'
+    )
+
+  const success =
+    document.querySelector(
+      '#rsvp-success'
+    )
+
+
+  if (!errorElement ||
+      !invitationCard ||
+      !formContainer ||
+      !success) {
+    return
+  }
+
 
   errorElement.hidden = true
+  errorElement.textContent = ''
+
+  success.hidden = true
   formContainer.hidden = true
-  formContainer.innerHTML = ''
+
 
   try {
 
-    const response = await fetch(
-      `/api/invitation?code=${encodeURIComponent(code)}`
-    )
+    const response =
+      await fetch(
+        `/api/invitation?code=${encodeURIComponent(code)}`
+      )
 
-    const data = await response.json()
 
-    if (!response.ok || !data.ok) {
+    const data =
+      await response.json()
+
+
+    if (
+      !response.ok ||
+      !data.ok
+    ) {
+
       throw new Error(
-        data.error || 'Ongeldige uitnodiging'
+        data.error ||
+        'Deze uitnodigingscode is ongeldig.'
       )
     }
 
-    renderRsvpForm(code, data.guests)
+
+    currentInvitationCode = code
+    currentInvitation = data
+
+
+    renderInvitation(data)
+
+
+    invitationCard.hidden = true
+
+    formContainer.hidden = false
+
 
   } catch (error) {
 
+    console.error(
+      'Invitation loading failed:',
+      error
+    )
+
+
     errorElement.textContent =
       error.message ||
-      'Er ging iets mis. Probeer opnieuw.'
+      'Deze uitnodigingscode is ongeldig.'
+
 
     errorElement.hidden = false
   }
@@ -659,153 +858,626 @@ async function loadInvitation(code) {
 
 
 /* =========================
-   RSVP FORM
+   RENDER INVITATION
 ========================= */
 
-function renderRsvpForm(code, guests) {
+function renderInvitation(data) {
 
-  const formContainer = document.querySelector(
-    '#rsvp-form-container'
+  const heading =
+    document.querySelector(
+      '#invitationHeading'
+    )
+
+  const intro =
+    document.querySelector(
+      '#invitationIntro'
+    )
+
+  const guestList =
+    document.querySelector(
+      '#guestList'
+    )
+
+
+  if (!heading ||
+      !intro ||
+      !guestList) {
+    return
+  }
+
+
+  const guests =
+    Array.isArray(data.guests)
+      ? data.guests
+      : []
+
+
+  heading.textContent =
+    guests.length === 1
+      ? `Welkom ${guests[0].name}`
+      : 'Welkom'
+
+
+  intro.textContent =
+    'Laat ons weten voor welke onderdelen jullie aanwezig zullen zijn.'
+
+
+  guestList.innerHTML =
+    guests
+      .map(renderGuest)
+      .join('')
+
+
+  setupDietaryControls(
+    guestList
   )
-
-  formContainer.innerHTML = `
-    <form id="rsvpForm">
-
-      <input
-        type="hidden"
-        id="rsvpCode"
-        value="${escapeHtml(code)}"
-      />
-
-      <h3>Jullie uitnodiging</h3>
-
-      <p>
-        Bevestig hieronder voor elk onderdeel afzonderlijk
-        of je erbij bent.
-      </p>
-
-      ${guests.map((guest) => `
-
-        <div
-          class="rsvp-guest"
-          data-guest-id="${guest.id}"
-        >
-
-          <h4>
-            ${escapeHtml(guest.name)}
-          </h4>
+}
 
 
-          ${guest.invitedToDinner ? `
+/* =========================
+   RENDER GUEST
+========================= */
 
-            <div class="rsvp-event">
+function renderGuest(guest) {
 
-              <h5>Diner</h5>
-
-              <label>
-
-                <input
-                  type="radio"
-                  name="dinner-${guest.id}"
-                  value="attending"
-                  ${guest.dinnerRsvpStatus === 'attending'
-                    ? 'checked'
-                    : ''}
-                  required
-                />
-
-                Ja, ik kom
-
-              </label>
+  const dinnerStatus =
+    guest.dinnerRsvpStatus ||
+    ''
 
 
-              <label>
-
-                <input
-                  type="radio"
-                  name="dinner-${guest.id}"
-                  value="declined"
-                  ${guest.dinnerRsvpStatus === 'declined'
-                    ? 'checked'
-                    : ''}
-                  required
-                />
-
-                Nee, ik kom niet
-
-              </label>
-
-            </div>
-
-          ` : ''}
+  const eveningStatus =
+    guest.eveningRsvpStatus ||
+    ''
 
 
-          ${guest.invitedToEvening ? `
-
-            <div class="rsvp-event">
-
-              <h5>Avondfeest</h5>
-
-              <label>
-
-                <input
-                  type="radio"
-                  name="evening-${guest.id}"
-                  value="attending"
-                  ${guest.eveningRsvpStatus === 'attending'
-                    ? 'checked'
-                    : ''}
-                  required
-                />
-
-                Ja, ik kom
-
-              </label>
+  const dinnerRequirements =
+    Array.isArray(
+      guest.dinnerDietaryRequirements
+    )
+      ? guest.dinnerDietaryRequirements
+      : []
 
 
-              <label>
+  const eveningRequirements =
+    Array.isArray(
+      guest.eveningDietaryRequirements
+    )
+      ? guest.eveningDietaryRequirements
+      : []
 
-                <input
-                  type="radio"
-                  name="evening-${guest.id}"
-                  value="declined"
-                  ${guest.eveningRsvpStatus === 'declined'
-                    ? 'checked'
-                    : ''}
-                  required
-                />
 
-                Nee, ik kom niet
+  return `
 
-              </label>
+    <article
+      class="rsvp-guest"
+      data-guest-id="${guest.id}"
+    >
 
-            </div>
+      <div class="rsvp-guest-heading">
 
-          ` : ''}
+        <h4>
+          ${escapeHtml(guest.name)}
+        </h4>
+
+      </div>
+
+
+      ${
+        guest.invitedToDinner
+          ? renderEventChoice(
+              'dinner',
+              guest.id,
+              'Diner',
+              'Zaterdag 2 oktober 2027',
+              dinnerStatus,
+              dinnerRequirements
+            )
+          : ''
+      }
+
+
+      ${
+        guest.invitedToEvening
+          ? renderEventChoice(
+              'evening',
+              guest.id,
+              'Avondfeest',
+              'Zaterdag 2 oktober 2027',
+              eveningStatus,
+              eveningRequirements
+            )
+          : ''
+      }
+
+    </article>
+
+  `
+}
+
+
+/* =========================
+   RENDER EVENT CHOICE
+========================= */
+
+function renderEventChoice(
+  eventPart,
+  guestId,
+  title,
+  date,
+  currentStatus,
+  dietaryRequirements
+) {
+
+  const attending =
+    currentStatus === 'attending'
+
+
+  const declined =
+    currentStatus === 'declined'
+
+
+  return `
+
+    <div class="rsvp-event">
+
+      <div class="rsvp-event-heading">
+
+        <div>
+
+          <h5>
+            ${title}
+          </h5>
+
+          <span>
+            ${date}
+          </span>
 
         </div>
 
-      `).join('')}
+      </div>
 
 
-      <button
-        type="submit"
-        class="button button-primary"
+      <div class="rsvp-choice-group">
+
+        <label class="rsvp-choice">
+
+          <input
+            type="radio"
+            name="${eventPart}-${guestId}"
+            value="attending"
+            ${attending ? 'checked' : ''}
+            required
+          />
+
+          <span>
+            Ja, ik kom
+          </span>
+
+        </label>
+
+
+        <label class="rsvp-choice">
+
+          <input
+            type="radio"
+            name="${eventPart}-${guestId}"
+            value="declined"
+            ${declined ? 'checked' : ''}
+            required
+          />
+
+          <span>
+            Nee, ik kom niet
+          </span>
+
+        </label>
+
+      </div>
+
+
+      <div
+        class="rsvp-dietary-wrapper"
+        data-dietary-wrapper="${eventPart}-${guestId}"
+        ${attending ? '' : 'hidden'}
       >
-        RSVP bevestigen
-      </button>
 
-    </form>
+        ${renderDietarySection(
+          eventPart,
+          guestId,
+          dietaryRequirements
+        )}
+
+      </div>
+
+    </div>
+
   `
+}
 
-  formContainer.hidden = false
 
-  document
-    .querySelector('#rsvpForm')
-    .addEventListener(
-      'submit',
-      handleRsvpSubmit
+/* =========================
+   DIETARY SECTION
+========================= */
+
+function renderDietarySection(
+  eventPart,
+  guestId,
+  requirements
+) {
+
+  const hasRequirement =
+    category =>
+      requirements.some(
+        requirement =>
+          requirement.category === category
+      )
+
+
+  const otherRequirement =
+    requirements.find(
+      requirement =>
+        requirement.category === 'other'
     )
+
+
+  const otherChecked =
+    Boolean(otherRequirement)
+
+
+  return `
+
+    <div
+      class="rsvp-dietary"
+      data-dietary-event="${eventPart}"
+      data-guest-id="${guestId}"
+    >
+
+      <h6>
+        Allergieën &amp; dieetvoorkeuren
+      </h6>
+
+      <p>
+        Heb je een allergie, intolerantie of dieetvoorkeur?
+        Duid hieronder aan wat voor jou van toepassing is.
+      </p>
+
+
+      <div class="dietary-options">
+
+        ${renderDietaryCheckbox(
+          eventPart,
+          guestId,
+          'vegetarian',
+          'Vegetarisch',
+          hasRequirement('vegetarian')
+        )}
+
+        ${renderDietaryCheckbox(
+          eventPart,
+          guestId,
+          'vegan',
+          'Veganistisch',
+          hasRequirement('vegan')
+        )}
+
+        ${renderDietaryCheckbox(
+          eventPart,
+          guestId,
+          'gluten',
+          'Glutenvrij',
+          hasRequirement('gluten')
+        )}
+
+        ${renderDietaryCheckbox(
+          eventPart,
+          guestId,
+          'lactose',
+          'Lactosevrij',
+          hasRequirement('lactose')
+        )}
+
+        ${renderDietaryCheckbox(
+          eventPart,
+          guestId,
+          'nuts',
+          'Noten',
+          hasRequirement('nuts')
+        )}
+
+        ${renderDietaryCheckbox(
+          eventPart,
+          guestId,
+          'shellfish',
+          'Schaaldieren',
+          hasRequirement('shellfish')
+        )}
+
+        ${renderDietaryCheckbox(
+          eventPart,
+          guestId,
+          'fish',
+          'Vis',
+          hasRequirement('fish')
+        )}
+
+        ${renderDietaryCheckbox(
+          eventPart,
+          guestId,
+          'other',
+          'Iets anders',
+          otherChecked
+        )}
+
+      </div>
+
+
+      <div
+        class="dietary-other"
+        data-dietary-other="${eventPart}-${guestId}"
+        ${otherChecked ? '' : 'hidden'}
+      >
+
+        <p class="dietary-other-label">
+          Is dit een allergie of een voorkeur?
+        </p>
+
+
+        <div class="dietary-other-types">
+
+          <label>
+
+            <input
+              type="radio"
+              name="${eventPart}-other-type-${guestId}"
+              value="allergy"
+              ${
+                otherRequirement?.otherType === 'allergy'
+                  ? 'checked'
+                  : ''
+              }
+              ${otherChecked ? 'required' : ''}
+            />
+
+            Allergie / intolerantie
+
+          </label>
+
+
+          <label>
+
+            <input
+              type="radio"
+              name="${eventPart}-other-type-${guestId}"
+              value="preference"
+              ${
+                otherRequirement?.otherType === 'preference'
+                  ? 'checked'
+                  : ''
+              }
+              ${otherChecked ? 'required' : ''}
+            />
+
+            Voorkeur
+
+          </label>
+
+        </div>
+
+
+        <input
+          type="text"
+          class="dietary-other-text"
+          data-dietary-other-text="${eventPart}-${guestId}"
+          value="${escapeHtml(
+            otherRequirement?.otherText || ''
+          )}"
+          maxlength="250"
+          placeholder="Bijvoorbeeld: geen varkensvlees"
+          ${otherChecked ? 'required' : ''}
+        />
+
+      </div>
+
+    </div>
+
+  `
+}
+
+
+/* =========================
+   DIETARY CHECKBOX
+========================= */
+
+function renderDietaryCheckbox(
+  eventPart,
+  guestId,
+  category,
+  label,
+  checked
+) {
+
+  return `
+
+    <label class="dietary-option">
+
+      <input
+        type="checkbox"
+        data-dietary-category="${category}"
+        data-event-part="${eventPart}"
+        data-guest-id="${guestId}"
+        ${checked ? 'checked' : ''}
+      />
+
+      <span>
+        ${label}
+      </span>
+
+    </label>
+
+  `
+}
+
+
+/* =========================
+   DIETARY CONTROLS
+========================= */
+
+function setupDietaryControls(container) {
+
+  container.addEventListener(
+    'change',
+    event => {
+
+      const target =
+        event.target
+
+
+      /* =====================
+         DINNER / EVENING
+      ====================== */
+
+      if (
+        target.matches(
+          'input[type="radio"][name^="dinner-"], input[type="radio"][name^="evening-"]'
+        )
+      ) {
+
+        const name =
+          target.name
+
+
+        const match =
+          name.match(
+            /^(dinner|evening)-(\d+)$/
+          )
+
+
+        if (!match) {
+          return
+        }
+
+
+        const eventPart =
+          match[1]
+
+        const guestId =
+          match[2]
+
+
+        const wrapper =
+          container.querySelector(
+            `[data-dietary-wrapper="${eventPart}-${guestId}"]`
+          )
+
+
+        if (!wrapper) {
+          return
+        }
+
+
+        wrapper.hidden =
+          target.value !== 'attending'
+
+
+        return
+      }
+
+
+      /* =====================
+         DIETARY CHECKBOX
+      ====================== */
+
+      if (
+        target.matches(
+          'input[data-dietary-category]'
+        )
+      ) {
+
+        const eventPart =
+          target.dataset.eventPart
+
+        const guestId =
+          target.dataset.guestId
+
+        const category =
+          target.dataset.dietaryCategory
+
+
+        if (
+          !eventPart ||
+          !guestId ||
+          !category
+        ) {
+          return
+        }
+
+
+        if (category === 'other') {
+
+          const other =
+            container.querySelector(
+              `[data-dietary-other="${eventPart}-${guestId}"]`
+            )
+
+
+          if (!other) {
+            return
+          }
+
+
+          other.hidden =
+            !target.checked
+
+
+          const typeInputs =
+            other.querySelectorAll(
+              `input[name="${eventPart}-other-type-${guestId}"]`
+            )
+
+
+          const textInput =
+            other.querySelector(
+              `[data-dietary-other-text="${eventPart}-${guestId}"]`
+            )
+
+
+          typeInputs.forEach(
+            input => {
+              input.required =
+                target.checked
+            }
+          )
+
+
+          if (textInput) {
+
+            textInput.required =
+              target.checked
+
+          }
+
+
+          if (!target.checked) {
+
+            typeInputs.forEach(
+              input => {
+                input.checked = false
+              }
+            )
+
+
+            if (textInput) {
+              textInput.value = ''
+            }
+
+          }
+
+        }
+
+      }
+
+    }
+  )
 }
 
 
@@ -813,172 +1485,555 @@ function renderRsvpForm(code, guests) {
    RSVP SUBMIT
 ========================= */
 
-async function handleRsvpSubmit(event) {
+async function submitRsvp(event) {
 
   event.preventDefault()
 
-  const form = event.currentTarget
 
-  const code =
-    document.querySelector('#rsvpCode').value
+  const form =
+    event.currentTarget
 
-  const guestElements = [
-    ...form.querySelectorAll('.rsvp-guest')
-  ]
 
-  const guests = guestElements.map(
-    (guestElement) => {
+  const submitButton =
+    form.querySelector(
+      'button[type="submit"]'
+    )
 
-      const guestId = Number(
-        guestElement.dataset.guestId
-      )
 
-      const dinner = guestElement.querySelector(
-        `input[name="dinner-${guestId}"]:checked`
-      )
+  const originalText =
+    submitButton
+      ? submitButton.textContent
+      : ''
 
-      const evening = guestElement.querySelector(
-        `input[name="evening-${guestId}"]:checked`
-      )
 
-      const guest = {
-        id: guestId
-      }
+  if (submitButton) {
 
-      if (dinner) {
-        guest.dinner = {
-          status: dinner.value,
-          dietaryRequirements: []
-        }
-      }
+    submitButton.disabled =
+      true
 
-      if (evening) {
-        guest.evening = {
-          status: evening.value,
-          dietaryRequirements: []
-        }
-      }
+    submitButton.textContent =
+      'Bezig...'
 
-      return guest
-    }
-  )
-
-  const payload = {
-    code,
-    guests
   }
 
 
   try {
 
-    const response = await fetch(
-      '/api/rsvp',
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(payload)
-      }
-    )
+    const guests =
+      collectRsvpGuests(form)
 
-    const data = await response.json()
 
-    if (!response.ok || !data.ok) {
+    const response =
+      await fetch(
+        '/api/rsvp',
+        {
+          method: 'POST',
+
+          headers: {
+            'Content-Type':
+              'application/json'
+          },
+
+          body: JSON.stringify({
+            code:
+              currentInvitationCode,
+
+            guests
+          })
+        }
+      )
+
+
+    const data =
+      await response.json()
+
+
+    if (
+      !response.ok ||
+      !data.ok
+    ) {
+
       throw new Error(
         data.error ||
-        'RSVP kon niet worden opgeslagen'
+        'Er ging iets mis bij het opslaan van je RSVP.'
       )
     }
 
 
-    document
-      .querySelector('#rsvp-form-container')
-      .hidden = true
+    const formContainer =
+      document.querySelector(
+        '#rsvp-form-container'
+      )
 
 
     const success =
-      document.querySelector('#rsvp-success')
+      document.querySelector(
+        '#rsvp-success'
+      )
 
-    success.textContent =
-      'Bedankt! Jullie RSVP werd succesvol opgeslagen.'
 
-    success.hidden = false
+    formContainer.hidden =
+      true
+
+
+    success.innerHTML = `
+
+      <div class="rsvp-success-inner">
+
+        <div class="rsvp-success-decoration">
+          ♡
+        </div>
+
+        <p class="eyebrow">
+          Bedankt!
+        </p>
+
+        <h3>
+          Jullie RSVP is ontvangen.
+        </h3>
+
+        <p>
+          We hebben jullie antwoord goed ontvangen.
+          We kijken ernaar uit om samen met jullie
+          onze dag te vieren.
+        </p>
+
+      </div>
+
+    `
+
+
+    success.hidden =
+      false
+
 
   } catch (error) {
 
-    const errorElement =
-      document.querySelector('#invitationError')
+    console.error(
+      'RSVP submission failed:',
+      error
+    )
+
+
+    let errorElement =
+      form.querySelector(
+        '.rsvp-submit-error'
+      )
+
+
+    if (!errorElement) {
+
+      errorElement =
+        document.createElement(
+          'div'
+        )
+
+
+      errorElement.className =
+        'rsvp-message rsvp-error rsvp-submit-error'
+
+
+      form
+        .querySelector(
+          '.rsvp-submit-area'
+        )
+        ?.before(
+          errorElement
+        )
+
+    }
+
 
     errorElement.textContent =
       error.message ||
-      'Er ging iets mis bij het opslaan.'
+      'Er ging iets mis bij het verzenden van je RSVP.'
 
-    errorElement.hidden = false
+
+    errorElement.hidden =
+      false
+
+
+  } finally {
+
+    if (submitButton) {
+
+      submitButton.disabled =
+        false
+
+      submitButton.textContent =
+        originalText
+
+    }
+
   }
 }
 
 
 /* =========================
-   HTML ESCAPING
+   COLLECT RSVP
 ========================= */
 
-function escapeHtml(value) {
+function collectRsvpGuests(form) {
 
-  return String(value)
-
-    .replaceAll(
-      '&',
-      '&amp;'
+  const guestElements =
+    form.querySelectorAll(
+      '.rsvp-guest'
     )
 
-    .replaceAll(
-      '<',
-      '&lt;'
-    )
 
-    .replaceAll(
-      '>',
-      '&gt;'
-    )
+  return Array.from(
+    guestElements
+  ).map(
+    guestElement => {
 
-    .replaceAll(
-      '"',
-      '&quot;'
-    )
+      const guestId =
+        Number(
+          guestElement.dataset.guestId
+        )
 
-    .replaceAll(
-      "'",
-      '&#039;'
-    )
+
+      const guest = {
+        id: guestId
+      }
+
+
+      /* =====================
+         DINNER
+      ====================== */
+
+      const dinnerInput =
+        guestElement.querySelector(
+          `input[name="dinner-${guestId}"]:checked`
+        )
+
+
+      if (dinnerInput) {
+
+        guest.dinner = {
+
+          status:
+            dinnerInput.value,
+
+          dietaryRequirements:
+            collectDietaryRequirements(
+              guestElement,
+              'dinner',
+              guestId
+            )
+
+        }
+
+      }
+
+
+      /* =====================
+         EVENING
+      ====================== */
+
+      const eveningInput =
+        guestElement.querySelector(
+          `input[name="evening-${guestId}"]:checked`
+        )
+
+
+      if (eveningInput) {
+
+        guest.evening = {
+
+          status:
+            eveningInput.value,
+
+          dietaryRequirements:
+            collectDietaryRequirements(
+              guestElement,
+              'evening',
+              guestId
+            )
+
+        }
+
+      }
+
+
+      return guest
+
+    }
+  )
 }
 
 
 /* =========================
-   INVITATION CODE
+   COLLECT DIETARY
 ========================= */
 
-document
-  .querySelector('#invitationForm')
-  .addEventListener(
+function collectDietaryRequirements(
+  guestElement,
+  eventPart,
+  guestId
+) {
+
+  const dietarySection =
+    guestElement.querySelector(
+      `[data-dietary-event="${eventPart}"][data-guest-id="${guestId}"]`
+    )
+
+
+  if (!dietarySection) {
+    return []
+  }
+
+
+  const checkboxes =
+    dietarySection.querySelectorAll(
+      'input[data-dietary-category]'
+    )
+
+
+  const requirements = []
+
+
+  checkboxes.forEach(
+    checkbox => {
+
+      if (!checkbox.checked) {
+        return
+      }
+
+
+      const category =
+        checkbox.dataset.dietaryCategory
+
+
+      if (category !== 'other') {
+
+        requirements.push({
+          category
+        })
+
+        return
+      }
+
+
+      const typeInput =
+        dietarySection.querySelector(
+          `input[name="${eventPart}-other-type-${guestId}"]:checked`
+        )
+
+
+      const textInput =
+        dietarySection.querySelector(
+          `[data-dietary-other-text="${eventPart}-${guestId}"]`
+        )
+
+
+      requirements.push({
+
+        category:
+          'other',
+
+        otherType:
+          typeInput
+            ? typeInput.value
+            : '',
+
+        otherText:
+          textInput
+            ? textInput.value.trim()
+            : ''
+
+      })
+
+    }
+  )
+
+
+  return requirements
+}
+
+
+/* =========================
+   ESCAPE HTML
+========================= */
+
+function escapeHtml(value) {
+
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;')
+
+}
+
+
+/* =========================
+   INVITATION UI
+========================= */
+
+const openInvitationButton =
+  document.querySelector(
+    '#openInvitationButton'
+  )
+
+
+const invitationPanel =
+  document.querySelector(
+    '#invitation-code-panel'
+  )
+
+
+const invitationInput =
+  document.querySelector(
+    '#invitationCode'
+  )
+
+
+const invitationForm =
+  document.querySelector(
+    '#invitationForm'
+  )
+
+
+/* =========================
+   OPEN INVITATION BUTTON
+========================= */
+
+if (openInvitationButton) {
+
+  openInvitationButton.addEventListener(
+    'click',
+    () => {
+
+      console.log(
+        'Open uitnodiging clicked'
+      )
+
+
+      if (!invitationPanel) {
+
+        console.error(
+          'Invitation code panel not found'
+        )
+
+        return
+      }
+
+
+      /*
+       * Maak het paneel expliciet zichtbaar.
+       *
+       * hidden wordt verwijderd omdat het
+       * paneel anders display:none krijgt.
+       */
+
+      invitationPanel.hidden =
+        false
+
+
+      /*
+       * De CSS gebruikt opacity: 0 op het
+       * gesloten paneel. Door is-open toe te
+       * voegen wordt het paneel zichtbaar
+       * en komt de animatie correct in beeld.
+       */
+
+      invitationPanel.classList.add(
+        'is-open'
+      )
+
+
+      invitationPanel.style.display =
+        'block'
+
+
+      /*
+       * Verberg de eerste knop.
+       */
+
+      openInvitationButton.style.display =
+        'none'
+
+
+      /*
+       * Focus op het invoerveld.
+       */
+
+      if (invitationInput) {
+
+        invitationInput.focus()
+
+        invitationInput.select()
+
+      }
+
+    }
+  )
+
+}
+
+
+/* =========================
+   INVITATION FORM
+========================= */
+
+if (invitationForm) {
+
+  invitationForm.addEventListener(
     'submit',
-    (event) => {
+    async event => {
 
       event.preventDefault()
 
-      const input =
-        document.querySelector(
-          '#invitationCode'
-        )
+
+      if (!invitationInput) {
+        return
+      }
+
 
       const code =
-        input.value
+        invitationInput.value
           .trim()
           .toUpperCase()
 
-      loadInvitation(code)
+
+      if (!code) {
+
+        invitationInput.focus()
+
+        return
+
+      }
+
+
+      await loadInvitation(
+        code
+      )
+
     }
   )
+
+}
+
+
+/* =========================
+   RSVP FORM
+========================= */
+
+const rsvpForm =
+  document.querySelector(
+    '#rsvpForm'
+  )
+
+
+if (rsvpForm) {
+
+  rsvpForm.addEventListener(
+    'submit',
+    submitRsvp
+  )
+
+}
 
 
 /* =========================
@@ -986,40 +2041,50 @@ document
 ========================= */
 
 document
-  .querySelector('#calendarButton')
-  .addEventListener(
+  .querySelector(
+    '#calendarButton'
+  )
+  ?.addEventListener(
     'click',
     createCalendarFile
   )
 
 
 document
-  .querySelector('#calendarButton2')
-  .addEventListener(
+  .querySelector(
+    '#calendarButton2'
+  )
+  ?.addEventListener(
     'click',
     createCalendarFile
   )
 
 
 document
-  .querySelector('#googleCalendarButton')
-  .addEventListener(
+  .querySelector(
+    '#googleCalendarButton'
+  )
+  ?.addEventListener(
     'click',
     openGoogleCalendar
   )
 
 
 document
-  .querySelector('#outlookCalendarButton')
-  .addEventListener(
+  .querySelector(
+    '#outlookCalendarButton'
+  )
+  ?.addEventListener(
     'click',
     openOutlookCalendar
   )
 
 
 document
-  .querySelector('#appleCalendarButton')
-  .addEventListener(
+  .querySelector(
+    '#appleCalendarButton'
+  )
+  ?.addEventListener(
     'click',
     createCalendarFile
   )
@@ -1032,17 +2097,23 @@ document
 function updateCountdown() {
 
   const countdown =
-    document.querySelector('#countdown')
+    document.querySelector(
+      '#countdown'
+    )
 
-  if (countdown) {
 
-    countdown.textContent =
-      formatCountdown()
+  if (!countdown) {
+    return
   }
+
+
+  countdown.textContent =
+    formatCountdown()
 }
 
 
 updateCountdown()
+
 
 setInterval(
   updateCountdown,

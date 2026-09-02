@@ -66,6 +66,10 @@
     }
 
 
+    /* ==========================================================
+       STATISTICS
+       ========================================================== */
+
     .cards {
       display: grid;
       grid-template-columns:
@@ -97,6 +101,10 @@
     }
 
 
+    /* ==========================================================
+       SECTIONS
+       ========================================================== */
+
     .section {
       background: #ffffff;
       border: 1px solid #ddd6c8;
@@ -127,9 +135,20 @@
     }
 
 
+    /* ==========================================================
+       TABLE
+       ========================================================== */
+
+    .table-wrapper {
+      width: 100%;
+      overflow-x: auto;
+    }
+
+
     table {
       width: 100%;
       border-collapse: collapse;
+      min-width: 800px;
     }
 
 
@@ -155,12 +174,17 @@
     }
 
 
+    /* ==========================================================
+       STATUS
+       ========================================================== */
+
     .status {
       display: inline-block;
       padding: 5px 9px;
       border-radius: 999px;
       font-size: 12px;
       font-weight: 600;
+      white-space: nowrap;
     }
 
 
@@ -194,6 +218,10 @@
     }
 
 
+    /* ==========================================================
+       BUTTONS
+       ========================================================== */
+
     button {
       border: 0;
       border-radius: 8px;
@@ -209,6 +237,16 @@
       opacity: 0.9;
     }
 
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+
+    /* ==========================================================
+       ERROR / LOADING
+       ========================================================== */
 
     .error {
       background: #fbe9e9;
@@ -227,6 +265,10 @@
     }
 
 
+    /* ==========================================================
+       GUESTS
+       ========================================================== */
+
     .guest-list {
       margin-top: 12px;
       border-left: 3px solid #ddd6c8;
@@ -235,19 +277,26 @@
 
 
     .guest {
-      padding: 12px 0;
+      padding: 14px 0;
       border-bottom: 1px solid #eee8dc;
+    }
+
+
+    .guest:first-child {
+      padding-top: 0;
     }
 
 
     .guest:last-child {
       border-bottom: 0;
+      padding-bottom: 0;
     }
 
 
     .guest-name {
       font-weight: 600;
-      margin-bottom: 6px;
+      margin-bottom: 8px;
+      font-size: 15px;
     }
 
 
@@ -258,12 +307,72 @@
     }
 
 
+    /* ==========================================================
+       DIETARY
+       ========================================================== */
+
     .dietary {
-      margin-top: 8px;
+      margin-top: 12px;
+      padding: 10px 12px;
+
+      background: #faf8f3;
+      border: 1px solid #eee8dc;
+      border-radius: 8px;
+
       font-size: 13px;
-      color: #666;
     }
 
+
+    .dietary-title {
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: #2d2b24;
+    }
+
+
+    .dietary-event {
+      margin-top: 10px;
+    }
+
+
+    .dietary-event:first-child {
+      margin-top: 0;
+    }
+
+
+    .dietary-event-title {
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+
+    .dietary-item {
+      margin: 3px 0;
+      color: #555;
+    }
+
+
+    .dietary-type-allergy {
+      color: #8a3c3c;
+      font-weight: 600;
+    }
+
+
+    .dietary-type-preference {
+      color: #806d35;
+      font-weight: 600;
+    }
+
+
+    .dietary-empty {
+      color: #888;
+      font-style: italic;
+    }
+
+
+    /* ==========================================================
+       MOBILE
+       ========================================================== */
 
     @media (max-width: 700px) {
 
@@ -271,12 +380,19 @@
         padding: 16px;
       }
 
+
       header {
         padding: 16px;
       }
 
-      table {
-        font-size: 13px;
+
+      header h1 {
+        font-size: 19px;
+      }
+
+
+      .section-body {
+        padding: 14px;
       }
 
     }
@@ -291,6 +407,7 @@
 <header>
 
   <div>
+
     <h1>
       Margo & Glenn — Admin
     </h1>
@@ -298,6 +415,7 @@
     <span id="adminEmail">
       Laden...
     </span>
+
   </div>
 
 </header>
@@ -306,6 +424,11 @@
 <main>
 
   <div id="errorContainer"></div>
+
+
+  <!-- ========================================================
+       STATISTICS
+       ======================================================== -->
 
   <div class="cards">
 
@@ -391,6 +514,10 @@
   </div>
 
 
+  <!-- ========================================================
+       INVITATIONS
+       ======================================================== -->
+
   <section class="section">
 
     <div class="section-header">
@@ -426,11 +553,9 @@
 
 <script>
 
-  /*
-   * ==========================================================
-   * LOAD DASHBOARD
-   * ==========================================================
-   */
+  /* ==========================================================
+     LOAD DASHBOARD
+     ========================================================== */
 
   async function loadDashboard() {
 
@@ -464,20 +589,22 @@
         await response.json()
 
 
-      if (!response.ok || !data.ok) {
+      if (
+        !response.ok ||
+        !data.ok
+      ) {
 
         throw new Error(
           data.error ||
           'Dashboard kon niet worden geladen.'
         )
+
       }
 
 
-      /*
-       * ------------------------------------------------------
-       * Admin identity
-       * ------------------------------------------------------
-       */
+      /* --------------------------------------------------------
+         Admin identity
+         -------------------------------------------------------- */
 
       document.getElementById(
         'adminEmail'
@@ -486,11 +613,9 @@
         'Authenticated'
 
 
-      /*
-       * ------------------------------------------------------
-       * Statistics
-       * ------------------------------------------------------
-       */
+      /* --------------------------------------------------------
+         Statistics
+         -------------------------------------------------------- */
 
       document.getElementById(
         'statInvitations'
@@ -522,13 +647,12 @@
         data.summary.eveningAttending
 
 
-      /*
-       * ------------------------------------------------------
-       * Invitations
-       * ------------------------------------------------------
-       */
+      /* --------------------------------------------------------
+         Invitations
+         -------------------------------------------------------- */
 
       if (
+        !Array.isArray(data.invitations) ||
         data.invitations.length === 0
       ) {
 
@@ -536,6 +660,7 @@
           '<p>Nog geen uitnodigingen.</p>'
 
         return
+
       }
 
 
@@ -555,6 +680,7 @@
         </div>
       `
 
+
       container.innerHTML = ''
 
     }
@@ -562,11 +688,9 @@
   }
 
 
-  /*
-   * ==========================================================
-   * RENDER INVITATIONS
-   * ==========================================================
-   */
+  /* ==========================================================
+     RENDER INVITATIONS
+     ========================================================== */
 
   function renderInvitations(
     invitations
@@ -574,51 +698,54 @@
 
     return `
 
-      <table>
+      <div class="table-wrapper">
 
-        <thead>
+        <table>
 
-          <tr>
+          <thead>
 
-            <th>
-              Code
-            </th>
+            <tr>
 
-            <th>
-              Status
-            </th>
+              <th>
+                Code
+              </th>
 
-            <th>
-              Gasten
-            </th>
+              <th>
+                Status
+              </th>
 
-            <th>
-              Actie
-            </th>
+              <th>
+                Gasten
+              </th>
 
-          </tr>
+              <th>
+                Actie
+              </th>
 
-        </thead>
+            </tr>
 
-        <tbody>
+          </thead>
 
-          ${invitations
-            .map(renderInvitation)
-            .join('')}
+          <tbody>
 
-        </tbody>
+            ${invitations
+              .map(renderInvitation)
+              .join('')}
 
-      </table>
+          </tbody>
+
+        </table>
+
+      </div>
 
     `
+
   }
 
 
-  /*
-   * ==========================================================
-   * RENDER ONE INVITATION
-   * ==========================================================
-   */
+  /* ==========================================================
+     RENDER ONE INVITATION
+     ========================================================== */
 
   function renderInvitation(
     invitation
@@ -634,6 +761,12 @@
       invitation.active
         ? 'Actief'
         : 'Inactief'
+
+
+    const guests =
+      Array.isArray(invitation.guests)
+        ? invitation.guests
+        : []
 
 
     return `
@@ -664,11 +797,15 @@
 
         <td>
 
-          <div>
+          <div class="guest-list">
 
-            ${invitation.guests
-              .map(renderGuest)
-              .join('')}
+            ${
+              guests.length > 0
+                ? guests
+                    .map(renderGuest)
+                    .join('')
+                : '<div class="dietary-empty">Geen gasten.</div>'
+            }
 
           </div>
 
@@ -697,14 +834,13 @@
       </tr>
 
     `
+
   }
 
 
-  /*
-   * ==========================================================
-   * RENDER GUEST
-   * ==========================================================
-   */
+  /* ==========================================================
+     RENDER GUEST
+     ========================================================== */
 
   function renderGuest(
     guest
@@ -727,26 +863,9 @@
 
 
     const dietary =
-      guest.dietaryRequirements.length > 0
-        ? `
-          <div class="dietary">
-
-            Dieet:
-
-            ${guest.dietaryRequirements
-              .map(
-                requirement =>
-                  escapeHtml(
-                    formatDietary(
-                      requirement
-                    )
-                  )
-              )
-              .join(', ')}
-
-          </div>
-        `
-        : ''
+      renderDietaryRequirements(
+        guest.dietaryRequirements
+      )
 
 
     return `
@@ -776,106 +895,269 @@
       </div>
 
     `
+
   }
 
 
-  /*
-   * ==========================================================
-   * RSVP STATUS
-   * ==========================================================
-   */
+  /* ==========================================================
+     RSVP STATUS
+     ========================================================== */
 
   function renderStatus(
     status
   ) {
 
-    if (status === 'attending') {
+    if (
+      status === 'attending'
+    ) {
 
       return `
+
         <span
           class="status status-attending"
         >
           Aanwezig
         </span>
+
       `
 
     }
 
 
-    if (status === 'declined') {
+    if (
+      status === 'declined'
+    ) {
 
       return `
+
         <span
           class="status status-declined"
         >
           Niet aanwezig
         </span>
+
       `
 
     }
 
 
     return `
+
       <span
         class="status status-pending"
       >
         Nog geen antwoord
       </span>
+
     `
+
   }
 
 
-  /*
-   * ==========================================================
-   * DIETARY
-   * ==========================================================
-   */
+  /* ==========================================================
+     DIETARY REQUIREMENTS
+     ========================================================== */
 
-  function formatDietary(
+  function renderDietaryRequirements(
+    requirements
+  ) {
+
+    if (
+      !Array.isArray(requirements) ||
+      requirements.length === 0
+    ) {
+
+      return ''
+
+    }
+
+
+    const dinnerRequirements =
+      requirements.filter(
+        requirement =>
+          requirement.eventPart === 'dinner'
+      )
+
+
+    const eveningRequirements =
+      requirements.filter(
+        requirement =>
+          requirement.eventPart === 'evening'
+      )
+
+
+    return `
+
+      <div class="dietary">
+
+        <div class="dietary-title">
+          Allergieën & dieetvoorkeuren
+        </div>
+
+
+        ${
+          dinnerRequirements.length > 0
+            ? renderDietaryEvent(
+                'Diner',
+                dinnerRequirements
+              )
+            : ''
+        }
+
+
+        ${
+          eveningRequirements.length > 0
+            ? renderDietaryEvent(
+                'Avondfeest',
+                eveningRequirements
+              )
+            : ''
+        }
+
+      </div>
+
+    `
+
+  }
+
+
+  /* ==========================================================
+     DIETARY EVENT
+     ========================================================== */
+
+  function renderDietaryEvent(
+    eventTitle,
+    requirements
+  ) {
+
+    return `
+
+      <div class="dietary-event">
+
+        <div class="dietary-event-title">
+          ${eventTitle}
+        </div>
+
+
+        ${requirements
+          .map(
+            requirement =>
+              renderDietaryRequirement(
+                requirement
+              )
+          )
+          .join('')}
+
+      </div>
+
+    `
+
+  }
+
+
+  /* ==========================================================
+     DIETARY REQUIREMENT
+     ========================================================== */
+
+  function renderDietaryRequirement(
     requirement
   ) {
 
     const labels = {
 
-      vegetarian: 'Vegetarisch',
-      vegan: 'Vegan',
-      gluten: 'Glutenvrij',
-      lactose: 'Lactosevrij',
-      nuts: 'Noten',
-      shellfish: 'Schaaldieren',
-      fish: 'Vis'
+      vegetarian:
+        'Vegetarisch',
+
+      vegan:
+        'Veganistisch',
+
+      gluten:
+        'Glutenvrij',
+
+      lactose:
+        'Lactosevrij',
+
+      nuts:
+        'Noten',
+
+      shellfish:
+        'Schaaldieren',
+
+      fish:
+        'Vis'
 
     }
 
+
+    /* --------------------------------------------------------
+       Standard requirement
+       -------------------------------------------------------- */
 
     if (
-      requirement.category === 'other'
+      requirement.category !== 'other'
     ) {
 
-      return (
-        'Andere: ' +
-        (
-          requirement.otherText ||
-          ''
-        )
-      )
+      return `
+
+        <div class="dietary-item">
+
+          ${escapeHtml(
+            labels[
+              requirement.category
+            ] ||
+            requirement.category
+          )}
+
+        </div>
+
+      `
+
     }
 
 
-    return (
-      labels[
-        requirement.category
-      ] ||
-      requirement.category
-    )
+    /* --------------------------------------------------------
+       Other requirement
+       -------------------------------------------------------- */
+
+    const otherText =
+      requirement.otherText ||
+      'Niet gespecificeerd'
+
+
+    const otherType =
+      requirement.otherType === 'allergy'
+        ? 'Allergie / intolerantie'
+        : requirement.otherType === 'preference'
+          ? 'Voorkeur'
+          : 'Niet gespecificeerd'
+
+
+    const typeClass =
+      requirement.otherType === 'allergy'
+        ? 'dietary-type-allergy'
+        : 'dietary-type-preference'
+
+
+    return `
+
+      <div class="dietary-item">
+
+        <span class="${typeClass}">
+          ${escapeHtml(otherType)}
+        </span>
+
+        — ${escapeHtml(otherText)}
+
+      </div>
+
+    `
+
   }
 
 
-  /*
-   * ==========================================================
-   * TOGGLE INVITATION
-   * ==========================================================
-   */
+  /* ==========================================================
+     TOGGLE INVITATION
+     ========================================================== */
 
   async function toggleInvitation(
     id,
@@ -916,6 +1198,7 @@
           data.error ||
           'Kon uitnodiging niet aanpassen.'
         )
+
       }
 
 
@@ -932,30 +1215,42 @@
   }
 
 
-  /*
-   * ==========================================================
-   * HTML ESCAPE
-   * ==========================================================
-   */
+  /* ==========================================================
+     HTML ESCAPE
+     ========================================================== */
 
   function escapeHtml(
     value
   ) {
 
     return String(value ?? '')
-      .replaceAll('&', '&amp;')
-      .replaceAll('<', '&lt;')
-      .replaceAll('>', '&gt;')
-      .replaceAll('"', '&quot;')
-      .replaceAll("'", '&#039;')
+      .replaceAll(
+        '&',
+        '&amp;'
+      )
+      .replaceAll(
+        '<',
+        '&lt;'
+      )
+      .replaceAll(
+        '>',
+        '&gt;'
+      )
+      .replaceAll(
+        '"',
+        '&quot;'
+      )
+      .replaceAll(
+        "'",
+        '&#039;'
+      )
+
   }
 
 
-  /*
-   * ==========================================================
-   * START
-   * ==========================================================
-   */
+  /* ==========================================================
+     START
+     ========================================================== */
 
   loadDashboard()
 
