@@ -10,18 +10,33 @@ export default {
   }
 }
 
-async function getAccessIdentity(ctx) {
-  if (!ctx.access) return null
-  try { return await ctx.access.getIdentity() } catch (error) { console.error('Cloudflare Access identity lookup failed:',error); return null }
+async function getAccessIdentity(request, ctx) {
+  // Direct Worker Access authentication, when available.
+  if (ctx.access) {
+    try {
+      const identity = await ctx.access.getIdentity()
+      if (identity) return identity
+    } catch (error) {
+      console.error('Cloudflare Access identity lookup failed:', error)
+    }
+  }
+
+  // With Static Assets, Cloudflare's internal assets router does not pass
+  // ctx.access to the user Worker. Access still authenticates the request and
+  // supplies the authenticated email header to the Worker.
+  const email = request.headers.get('cf-access-authenticated-user-email')
+  if (email) return { email }
+
+  return null
 }
 
 async function handleAdminPage(request, env, ctx) {
-  if (!await getAccessIdentity(ctx)) return new Response('Unauthorized',{status:401})
+  if (!await getAccessIdentity(request, ctx)) return new Response('Unauthorized',{status:401})
   return env.ASSETS.fetch(new Request(new URL('/admin.html',request.url),request))
 }
 
 async function handleAdminApi(request, env, ctx) {
-  const identity = await getAccessIdentity(ctx)
+  const identity = await getAccessIdentity(request, ctx)
   if (!identity) return Response.json({ok:false,error:'Unauthorized'},{status:401})
   const url = new URL(request.url)
   if (url.pathname === '/admin/api/health' && request.method === 'GET') return Response.json({ok:true,authenticated:true,email:identity.email??null})
@@ -36,7 +51,9 @@ async function handleAdminDashboard(env, identity) {
     const invitationResult = await db.prepare(`SELECT id, invitation_code, active FROM invitations ORDER BY id`).all()
     const guestResult = await db.prepare(`SELECT id, invitation_id, name, email, invited_to_dinner, invited_to_evening, rsvp_status, dinner_rsvp_status, evening_rsvp_status FROM guests ORDER BY invitation_id,id`).all()
     const dietaryResult = await db.prepare(`SELECT id,guest_id,event_part,category,other_type,other_text FROM guest_dietary_requirements ORDER BY guest_id,event_part,id`).all()
-    const rsvpResult = await db.prepare(`SELECT id,guest_id,status,event_part,created_at FROM rsvp_responses ORDER BY created_at DESC`).all()
+    // rsvp_responses uses submitted_at in the actual schema; expose it to the
+    // admin UI as createdAt for a consistent frontend representation.
+    const rsvpResult = await db.prepare(`SELECT id,guest_id,status,event_part,submitted_at AS created_at FROM rsvp_responses ORDER BY submitted_at DESC`).all()
 
     const invitations = invitationResult.results.map(invitation => {
       const guests = guestResult.results.filter(g => g.invitation_id === invitation.id).map(guest => {
