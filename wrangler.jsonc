@@ -1,7 +1,7 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "margo-glenn-wedding",
-  "main": "./worker/index.js",
+  "main": "./worker/admin-api-wrapper.js",
   "compatibility_date": "2026-08-31",
 
   "assets": {
