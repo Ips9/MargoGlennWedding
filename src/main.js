@@ -245,8 +245,8 @@ document.querySelector('#app').innerHTML = `
         </h1>
 
         <p class="intro">
-          Op 2 oktober 2027 vieren we graag samen met jullie
-          onze liefde en de start van onze toekomst als man en vrouw.
+          Op 2 oktober 2027 willen we samen met jullie onze liefde vieren 
+          en het begin van een nieuw hoofdstuk in ons leven als man en vrouw.
         </p>
 
         <div class="hero-actions">
