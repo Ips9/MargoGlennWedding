@@ -1,5 +1,7 @@
 import legacyWorker from './index.js'
 
+const CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
+
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url)
@@ -21,6 +23,10 @@ export default {
       return handleAdminDashboard(env, identity)
     }
 
+    if (url.pathname === '/admin/api/invitation/create' && request.method === 'POST') {
+      return handleAdminInvitationCreate(request, env, identity)
+    }
+
     if (url.pathname === '/admin/api/invitation/toggle' && request.method === 'POST') {
       return handleAdminInvitationToggle(request, env, identity)
     }
@@ -30,7 +36,6 @@ export default {
 }
 
 async function getAdminIdentity(request, ctx) {
-  // Direct Worker Access authentication, when available.
   if (ctx.access) {
     try {
       const identity = await ctx.access.getIdentity()
@@ -40,9 +45,6 @@ async function getAdminIdentity(request, ctx) {
     }
   }
 
-  // With Static Assets, Cloudflare's internal assets router does not pass
-  // ctx.access to the user Worker. Access still authenticates the request and
-  // supplies the authenticated email header to the Worker.
   const email = request.headers.get('cf-access-authenticated-user-email')
   if (email) return { email }
 
@@ -55,8 +57,6 @@ async function handleAdminDashboard(env, identity) {
     const invitationResult = await db.prepare(`SELECT id, invitation_code, active FROM invitations ORDER BY id`).all()
     const guestResult = await db.prepare(`SELECT id, invitation_id, name, email, invited_to_dinner, invited_to_evening, rsvp_status, dinner_rsvp_status, evening_rsvp_status FROM guests ORDER BY invitation_id,id`).all()
     const dietaryResult = await db.prepare(`SELECT id,guest_id,event_part,category,other_type,other_text FROM guest_dietary_requirements ORDER BY guest_id,event_part,id`).all()
-    // rsvp_responses uses submitted_at in the actual schema; expose it to the
-    // admin UI as createdAt for a consistent frontend representation.
     const rsvpResult = await db.prepare(`SELECT id,guest_id,status,event_part,submitted_at AS created_at FROM rsvp_responses ORDER BY submitted_at DESC`).all()
 
     const invitations = invitationResult.results.map(invitation => {
@@ -113,6 +113,64 @@ async function handleAdminDashboard(env, identity) {
     console.error('Admin dashboard failed:', error)
     return Response.json({ ok: false, error: 'Unable to load admin dashboard' }, { status: 500 })
   }
+}
+
+async function handleAdminInvitationCreate(request, env, identity) {
+  let body
+  try {
+    body = await request.json()
+  } catch {
+    return Response.json({ ok: false, error: 'Ongeldige JSON' }, { status: 400 })
+  }
+
+  const guests = Array.isArray(body?.guests) ? body.guests : []
+  if (guests.length < 1 || guests.length > 2) {
+    return Response.json({ ok: false, error: 'Een uitnodiging moet 1 of 2 gasten bevatten.' }, { status: 400 })
+  }
+
+  const normalizedGuests = guests.map((guest, index) => ({
+    name: typeof guest?.name === 'string' ? guest.name.trim() : '',
+    invitedToDinner: guest?.invitedToDinner === true,
+    invitedToEvening: guest?.invitedToEvening === true,
+    index: index + 1
+  }))
+
+  for (const guest of normalizedGuests) {
+    if (!guest.name || guest.name.length > 150) {
+      return Response.json({ ok: false, error: `Naam van gast ${guest.index} is ongeldig.` }, { status: 400 })
+    }
+    if (!guest.invitedToDinner && !guest.invitedToEvening) {
+      return Response.json({ ok: false, error: `Gast ${guest.index} moet voor minstens één onderdeel uitgenodigd zijn.` }, { status: 400 })
+    }
+  }
+
+  const db = env.margo_glenn_wedding_db
+  for (let attempt = 0; attempt < 10; attempt++) {
+    const code = generateInvitationCode()
+    try {
+      const insertResult = await db.prepare(`INSERT INTO invitations (invitation_code, active) VALUES (?,1)`).bind(code).run()
+      const invitationId = insertResult.meta.last_row_id
+      if (!invitationId) throw new Error('Invitation ID was not returned')
+
+      const statements = normalizedGuests.map(guest => db.prepare(`INSERT INTO guests (invitation_id,name,email,invited_to_dinner,invited_to_evening) VALUES (?,?,NULL,?,?)`).bind(invitationId,guest.name,guest.invitedToDinner?1:0,guest.invitedToEvening?1:0))
+      await db.batch(statements)
+
+      console.log(`Invitation ${code} created by ${identity.email ?? 'unknown'} for ${normalizedGuests.length} guest(s)`)
+      return Response.json({ ok: true, invitation: { id: invitationId, invitationCode: code, active: true, guests: normalizedGuests.map(({name,invitedToDinner,invitedToEvening}) => ({name,invitedToDinner,invitedToEvening})) } })
+    } catch (error) {
+      if (String(error?.message || '').toLowerCase().includes('unique')) continue
+      console.error('Invitation creation failed:', error)
+      return Response.json({ ok: false, error: 'Uitnodiging kon niet worden aangemaakt.' }, { status: 500 })
+    }
+  }
+
+  return Response.json({ ok: false, error: 'Kon geen unieke uitnodigingscode genereren. Probeer opnieuw.' }, { status: 500 })
+}
+
+function generateInvitationCode() {
+  const values = new Uint32Array(6)
+  crypto.getRandomValues(values)
+  return `MG-${Array.from(values, value => CODE_ALPHABET[value % CODE_ALPHABET.length]).join('')}`
 }
 
 async function handleAdminInvitationToggle(request, env, identity) {
