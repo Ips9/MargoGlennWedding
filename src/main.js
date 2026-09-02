@@ -240,8 +240,8 @@ document.querySelector('#app').innerHTML = `
         </p>
 
         <h1>
-          Een dag om te<br />
-          <em>herinneren.</em>
+          Laat ons weten<br />
+          <em>of je er kan bij zijn</em>
         </h1>
 
         <p class="intro">
