@@ -2,7 +2,8 @@
   function updateRsvpIntro() {
     const intro = document.querySelector('#invitationIntro')
     const guestList = document.querySelector('#guestList')
-    if (!intro || !guestList || !document.querySelector('#rsvp-form-container') || document.querySelector('#rsvp-form-container').hidden) return
+    const formContainer = document.querySelector('#rsvp-form-container')
+    if (!intro || !guestList || !formContainer || formContainer.hidden) return
 
     const guests = guestList.querySelectorAll('.rsvp-guest')
     const guestCount = guests.length
@@ -34,7 +35,29 @@
       : `Kan je erbij zijn op ons ${part}?`
   }
 
-  const observer = new MutationObserver(updateRsvpIntro)
+  function keepInvitationCodePanelOpen() {
+    const button = document.querySelector('#openInvitationButton')
+    const panel = document.querySelector('#invitation-code-panel')
+    const input = document.querySelector('#invitationCode')
+    if (!button || !panel || button.dataset.codePanelFixAttached === 'true') return
+
+    button.dataset.codePanelFixAttached = 'true'
+    button.addEventListener('click', () => {
+      // The original handler toggles the panel. Run after it and make sure
+      // the code field remains visible and ready for input.
+      setTimeout(() => {
+        panel.hidden = false
+        if (input) input.focus()
+      }, 0)
+    })
+  }
+
+  const observer = new MutationObserver(() => {
+    keepInvitationCodePanelOpen()
+    updateRsvpIntro()
+  })
+
   observer.observe(document.documentElement, { childList: true, subtree: true })
+  keepInvitationCodePanelOpen()
   updateRsvpIntro()
 })()
