@@ -55,7 +55,9 @@ async function handleAdminDashboard(env, identity) {
     const invitationResult = await db.prepare(`SELECT id, invitation_code, active FROM invitations ORDER BY id`).all()
     const guestResult = await db.prepare(`SELECT id, invitation_id, name, email, invited_to_dinner, invited_to_evening, rsvp_status, dinner_rsvp_status, evening_rsvp_status FROM guests ORDER BY invitation_id,id`).all()
     const dietaryResult = await db.prepare(`SELECT id,guest_id,event_part,category,other_type,other_text FROM guest_dietary_requirements ORDER BY guest_id,event_part,id`).all()
-    const rsvpResult = await db.prepare(`SELECT id,guest_id,status,event_part,created_at FROM rsvp_responses ORDER BY created_at DESC`).all()
+    // rsvp_responses uses submitted_at in the actual schema; expose it to the
+    // admin UI as createdAt for a consistent frontend representation.
+    const rsvpResult = await db.prepare(`SELECT id,guest_id,status,event_part,submitted_at AS created_at FROM rsvp_responses ORDER BY submitted_at DESC`).all()
 
     const invitations = invitationResult.results.map(invitation => {
       const guests = guestResult.results.filter(g => g.invitation_id === invitation.id).map(guest => {
