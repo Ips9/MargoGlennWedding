@@ -21,5 +21,12 @@
       "database_id": "82b35a74-ad2c-4229-b6c8-9c79a783ea62",
       "remote": true
     }
+  ],
+
+  "r2_buckets": [
+    {
+      "binding": "WEDDING_PHOTOS",
+      "bucket_name": "margo-glenn-wedding-photos"
+    }
   ]
 }
