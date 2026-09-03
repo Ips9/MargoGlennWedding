@@ -60,98 +60,69 @@ async function handlePublicInvitation(request, env) {
     return Response.json({ ok: false, error: 'Invalid invitation' }, { status: 404 })
   }
 
-  const db = env.margo_glenn_wedding_db
-
   try {
-    // Keep the critical invitation lookup small and independent.
-    const invitation = await withTimeout(
-      db.prepare(`
-        SELECT id, active
-        FROM invitations
-        WHERE invitation_code = ?
-        LIMIT 1
-      `).bind(code).first(),
+    const result = await withTimeout(
+      env.margo_glenn_wedding_db.prepare(`
+        SELECT
+          i.id AS invitation_id,
+          g.id AS guest_id,
+          g.name,
+          g.email,
+          g.invited_to_dinner,
+          g.invited_to_evening,
+          g.rsvp_status,
+          g.dinner_rsvp_status,
+          g.evening_rsvp_status,
+          d.id AS dietary_id,
+          d.event_part AS dietary_event_part,
+          d.category AS dietary_category,
+          d.other_type AS dietary_other_type,
+          d.other_text AS dietary_other_text
+        FROM invitations i
+        INNER JOIN guests g ON g.invitation_id = i.id
+        LEFT JOIN guest_dietary_requirements d ON d.guest_id = g.id
+        WHERE i.invitation_code = ?
+          AND i.active = 1
+        ORDER BY g.id, d.id
+      `).bind(code).all(),
       5000
     )
 
-    if (!invitation || invitation.active !== 1) {
+    if (!result.results.length) {
       return Response.json({ ok: false, error: 'Invalid invitation' }, { status: 404 })
     }
 
-    // Guest data is all the RSVP form needs in order to render.
-    // Do this before any optional dietary-history lookup.
-    const guestResult = await withTimeout(
-      db.prepare(`
-        SELECT
-          id,
-          name,
-          email,
-          invited_to_dinner,
-          invited_to_evening,
-          rsvp_status,
-          dinner_rsvp_status,
-          evening_rsvp_status
-        FROM guests
-        WHERE invitation_id = ?
-        ORDER BY id
-      `).bind(invitation.id).all(),
-      5000
-    )
+    const guestMap = new Map()
 
-    const guests = guestResult.results.map((guest) => ({
-      id: guest.id,
-      name: guest.name,
-      email: guest.email || '',
-      invitedToDinner: guest.invited_to_dinner === 1,
-      invitedToEvening: guest.invited_to_evening === 1,
-      rsvpStatus: guest.rsvp_status,
-      dinnerRsvpStatus: guest.dinner_rsvp_status,
-      eveningRsvpStatus: guest.evening_rsvp_status,
-      dietaryRequirements: []
-    }))
-
-    // Dietary data is optional for opening the invitation. If its table/query
-    // is unavailable for any reason, the RSVP can still render and continue.
-    try {
-      const dietaryResult = await withTimeout(
-        db.prepare(`
-          SELECT
-            id,
-            guest_id,
-            event_part,
-            category,
-            other_type,
-            other_text
-          FROM guest_dietary_requirements
-          WHERE guest_id IN (
-            SELECT id FROM guests WHERE invitation_id = ?
-          )
-          ORDER BY guest_id, event_part, id
-        `).bind(invitation.id).all(),
-        2000
-      )
-
-      for (const guest of guests) {
-        const seen = new Set()
-        guest.dietaryRequirements = dietaryResult.results
-          .filter((row) => row.guest_id === guest.id)
-          .filter((row) => {
-            if (seen.has(row.category)) return false
-            seen.add(row.category)
-            return true
-          })
-          .map((row) => ({
-            id: row.id,
-            eventPart: row.event_part,
-            category: row.category,
-            otherType: row.other_type,
-            otherText: row.other_text
-          }))
+    for (const row of result.results) {
+      let guest = guestMap.get(row.guest_id)
+      if (!guest) {
+        guest = {
+          id: row.guest_id,
+          name: row.name,
+          email: row.email || '',
+          invitedToDinner: row.invited_to_dinner === 1,
+          invitedToEvening: row.invited_to_evening === 1,
+          rsvpStatus: row.rsvp_status,
+          dinnerRsvpStatus: row.dinner_rsvp_status,
+          eveningRsvpStatus: row.evening_rsvp_status,
+          dietaryRequirements: []
+        }
+        guestMap.set(row.guest_id, guest)
       }
-    } catch (error) {
-      console.warn('Dietary lookup skipped:', error)
+
+      if (row.dietary_id != null && !guest.dietaryRequirements.some((item) => item.category === row.dietary_category)) {
+        guest.dietaryRequirements.push({
+          id: row.dietary_id,
+          eventPart: row.dietary_event_part,
+          category: row.dietary_category,
+          otherType: row.dietary_other_type,
+          otherText: row.dietary_other_text
+        })
+      }
     }
 
+    const guests = Array.from(guestMap.values())
     const email = guests.find((guest) => guest.email)?.email || ''
 
     return new Response(JSON.stringify({ ok: true, email, guests }), {
