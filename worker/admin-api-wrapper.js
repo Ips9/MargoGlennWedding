@@ -6,15 +6,7 @@ export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url)
 
-    /*
-     * Public invitation lookup is handled directly here.
-     * This avoids routing the RSVP invitation request through the
-     * legacy worker chain and makes the production API path explicit.
-     */
-    if (
-      url.pathname === '/api/invitation' &&
-      request.method === 'GET'
-    ) {
+    if (url.pathname === '/api/invitation' && request.method === 'GET') {
       return handlePublicInvitation(request, env)
     }
 
@@ -58,47 +50,38 @@ async function getAdminIdentity(request, ctx) {
   }
 
   const email = request.headers.get('cf-access-authenticated-user-email')
-  if (email) return { email }
-
-  return null
+  return email ? { email } : null
 }
 
 async function handlePublicInvitation(request, env) {
-  const url = new URL(request.url)
-  const rawCode = url.searchParams.get('code')
-  const code = typeof rawCode === 'string'
-    ? rawCode.trim().toUpperCase()
-    : ''
+  const code = (new URL(request.url).searchParams.get('code') || '').trim().toUpperCase()
 
   if (!/^MG-[A-Z0-9]{6}$/.test(code)) {
-    return Response.json(
-      { ok: false, error: 'Invalid invitation' },
-      { status: 404 }
-    )
+    return Response.json({ ok: false, error: 'Invalid invitation' }, { status: 404 })
   }
 
-  try {
-    const db = env.margo_glenn_wedding_db
+  const db = env.margo_glenn_wedding_db
 
-    const invitation = await db
-      .prepare(`
+  try {
+    // Keep the critical invitation lookup small and independent.
+    const invitation = await withTimeout(
+      db.prepare(`
         SELECT id, active
         FROM invitations
         WHERE invitation_code = ?
         LIMIT 1
-      `)
-      .bind(code)
-      .first()
+      `).bind(code).first(),
+      5000
+    )
 
     if (!invitation || invitation.active !== 1) {
-      return Response.json(
-        { ok: false, error: 'Invalid invitation' },
-        { status: 404 }
-      )
+      return Response.json({ ok: false, error: 'Invalid invitation' }, { status: 404 })
     }
 
-    const guestResult = await db
-      .prepare(`
+    // Guest data is all the RSVP form needs in order to render.
+    // Do this before any optional dietary-history lookup.
+    const guestResult = await withTimeout(
+      db.prepare(`
         SELECT
           id,
           name,
@@ -111,92 +94,90 @@ async function handlePublicInvitation(request, env) {
         FROM guests
         WHERE invitation_id = ?
         ORDER BY id
-      `)
-      .bind(invitation.id)
-      .all()
+      `).bind(invitation.id).all(),
+      5000
+    )
 
-    if (!guestResult.results.length) {
-      return Response.json(
-        {
-          ok: true,
-          email: '',
-          guests: []
-        }
+    const guests = guestResult.results.map((guest) => ({
+      id: guest.id,
+      name: guest.name,
+      email: guest.email || '',
+      invitedToDinner: guest.invited_to_dinner === 1,
+      invitedToEvening: guest.invited_to_evening === 1,
+      rsvpStatus: guest.rsvp_status,
+      dinnerRsvpStatus: guest.dinner_rsvp_status,
+      eveningRsvpStatus: guest.evening_rsvp_status,
+      dietaryRequirements: []
+    }))
+
+    // Dietary data is optional for opening the invitation. If its table/query
+    // is unavailable for any reason, the RSVP can still render and continue.
+    try {
+      const dietaryResult = await withTimeout(
+        db.prepare(`
+          SELECT
+            id,
+            guest_id,
+            event_part,
+            category,
+            other_type,
+            other_text
+          FROM guest_dietary_requirements
+          WHERE guest_id IN (
+            SELECT id FROM guests WHERE invitation_id = ?
+          )
+          ORDER BY guest_id, event_part, id
+        `).bind(invitation.id).all(),
+        2000
       )
+
+      for (const guest of guests) {
+        const seen = new Set()
+        guest.dietaryRequirements = dietaryResult.results
+          .filter((row) => row.guest_id === guest.id)
+          .filter((row) => {
+            if (seen.has(row.category)) return false
+            seen.add(row.category)
+            return true
+          })
+          .map((row) => ({
+            id: row.id,
+            eventPart: row.event_part,
+            category: row.category,
+            otherType: row.other_type,
+            otherText: row.other_text
+          }))
+      }
+    } catch (error) {
+      console.warn('Dietary lookup skipped:', error)
     }
 
-    const dietaryResult = await db
-      .prepare(`
-        SELECT
-          d.id,
-          d.guest_id,
-          d.event_part,
-          d.category,
-          d.other_type,
-          d.other_text
-        FROM guest_dietary_requirements d
-        INNER JOIN guests g
-          ON g.id = d.guest_id
-        WHERE g.invitation_id = ?
-        ORDER BY d.guest_id, d.event_part, d.id
-      `)
-      .bind(invitation.id)
-      .all()
+    const email = guests.find((guest) => guest.email)?.email || ''
 
-    const guests = guestResult.results.map((guest) => {
-      const seenCategories = new Set()
-
-      const dietaryRequirements = dietaryResult.results
-        .filter((requirement) => requirement.guest_id === guest.id)
-        .filter((requirement) => {
-          if (seenCategories.has(requirement.category)) {
-            return false
-          }
-
-          seenCategories.add(requirement.category)
-          return true
-        })
-        .map((requirement) => ({
-          id: requirement.id,
-          eventPart: requirement.event_part,
-          category: requirement.category,
-          otherType: requirement.other_type,
-          otherText: requirement.other_text
-        }))
-
-      return {
-        id: guest.id,
-        name: guest.name,
-        email: guest.email || '',
-        invitedToDinner: guest.invited_to_dinner === 1,
-        invitedToEvening: guest.invited_to_evening === 1,
-        rsvpStatus: guest.rsvp_status,
-        dinnerRsvpStatus: guest.dinner_rsvp_status,
-        eveningRsvpStatus: guest.evening_rsvp_status,
-        dietaryRequirements
+    return new Response(JSON.stringify({ ok: true, email, guests }), {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/json; charset=utf-8',
+        'Cache-Control': 'no-store, no-cache, must-revalidate'
       }
-    })
-
-    const email = guestResult.results.find((guest) => guest.email)?.email || ''
-
-    return Response.json({
-      ok: true,
-      email,
-      guests
     })
   } catch (error) {
     console.error('Public invitation lookup failed:', error)
 
     return Response.json(
-      {
-        ok: false,
-        error: 'Unable to process invitation'
-      },
-      {
-        status: 500
-      }
+      { ok: false, error: 'Unable to process invitation' },
+      { status: 500 }
     )
   }
+}
+
+function withTimeout(promise, milliseconds) {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => {
+      setTimeout(() => reject(new Error(`Operation timed out after ${milliseconds}ms`)), milliseconds)
+    })
+  ])
 }
 
 async function handleAdminDashboard(env, identity) {
@@ -207,64 +188,66 @@ async function handleAdminDashboard(env, identity) {
     const dietaryResult = await db.prepare(`SELECT id,guest_id,event_part,category,other_type,other_text FROM guest_dietary_requirements ORDER BY guest_id,event_part,id`).all()
     const rsvpResult = await db.prepare(`SELECT id,guest_id,status,event_part,submitted_at AS created_at FROM rsvp_responses ORDER BY submitted_at DESC`).all()
 
-    const invitations = invitationResult.results.map(invitation => {
-      const guests = guestResult.results.filter(g => g.invitation_id === invitation.id).map(guest => {
-        const seen = new Set()
-        const dietaryRequirements = dietaryResult.results
-          .filter(r => r.guest_id === guest.id)
-          .filter(r => {
-            if (seen.has(r.category)) return false
-            seen.add(r.category)
-            return true
-          })
-          .map(r => ({ id:r.id, category:r.category, otherText:r.other_text }))
+    const invitations = invitationResult.results.map((invitation) => {
+      const guests = guestResult.results
+        .filter((g) => g.invitation_id === invitation.id)
+        .map((guest) => {
+          const seen = new Set()
+          const dietaryRequirements = dietaryResult.results
+            .filter((r) => r.guest_id === guest.id)
+            .filter((r) => {
+              if (seen.has(r.category)) return false
+              seen.add(r.category)
+              return true
+            })
+            .map((r) => ({ id: r.id, category: r.category, otherText: r.other_text }))
 
-        const rsvpHistory = rsvpResult.results
-          .filter(r => r.guest_id === guest.id)
-          .map(r => ({ id:r.id, status:r.status, eventPart:r.event_part, createdAt:r.created_at }))
+          const rsvpHistory = rsvpResult.results
+            .filter((r) => r.guest_id === guest.id)
+            .map((r) => ({ id: r.id, status: r.status, eventPart: r.event_part, createdAt: r.created_at }))
 
-        return {
-          id:guest.id,
-          name:guest.name,
-          email:guest.email||null,
-          invitedToDinner:guest.invited_to_dinner===1,
-          invitedToEvening:guest.invited_to_evening===1,
-          rsvpStatus:guest.rsvp_status,
-          dinnerRsvpStatus:guest.dinner_rsvp_status,
-          eveningRsvpStatus:guest.evening_rsvp_status,
-          dietaryRequirements,
-          rsvpHistory
-        }
-      })
+          return {
+            id: guest.id,
+            name: guest.name,
+            email: guest.email || null,
+            invitedToDinner: guest.invited_to_dinner === 1,
+            invitedToEvening: guest.invited_to_evening === 1,
+            rsvpStatus: guest.rsvp_status,
+            dinnerRsvpStatus: guest.dinner_rsvp_status,
+            eveningRsvpStatus: guest.evening_rsvp_status,
+            dietaryRequirements,
+            rsvpHistory
+          }
+        })
 
       return {
-        id:invitation.id,
-        invitationCode:invitation.invitation_code,
-        active:invitation.active===1,
+        id: invitation.id,
+        invitationCode: invitation.invitation_code,
+        active: invitation.active === 1,
         guests
       }
     })
 
     const allGuests = guestResult.results
     const summary = {
-      invitations:invitations.length,
-      activeInvitations:invitations.filter(i=>i.active).length,
-      guests:allGuests.length,
-      dinnerAttending:allGuests.filter(g=>g.dinner_rsvp_status==='attending').length,
-      dinnerDeclined:allGuests.filter(g=>g.dinner_rsvp_status==='declined').length,
-      eveningAttending:allGuests.filter(g=>g.evening_rsvp_status==='attending').length,
-      eveningDeclined:allGuests.filter(g=>g.evening_rsvp_status==='declined').length
+      invitations: invitations.length,
+      activeInvitations: invitations.filter((i) => i.active).length,
+      guests: allGuests.length,
+      dinnerAttending: allGuests.filter((g) => g.dinner_rsvp_status === 'attending').length,
+      dinnerDeclined: allGuests.filter((g) => g.dinner_rsvp_status === 'declined').length,
+      eveningAttending: allGuests.filter((g) => g.evening_rsvp_status === 'attending').length,
+      eveningDeclined: allGuests.filter((g) => g.evening_rsvp_status === 'declined').length
     }
 
     return Response.json({
-      ok:true,
-      admin:{email:identity.email??null},
+      ok: true,
+      admin: { email: identity.email ?? null },
       summary,
       invitations
     })
   } catch (error) {
-    console.error('Admin dashboard failed:',error)
-    return Response.json({ok:false,error:'Unable to load admin dashboard'},{status:500})
+    console.error('Admin dashboard failed:', error)
+    return Response.json({ ok: false, error: 'Unable to load admin dashboard' }, { status: 500 })
   }
 }
 
@@ -305,11 +288,23 @@ async function handleAdminInvitationCreate(request, env, identity) {
       const invitationId = insertResult.meta.last_row_id
       if (!invitationId) throw new Error('Invitation ID was not returned')
 
-      const statements = normalizedGuests.map(guest => db.prepare(`INSERT INTO guests (invitation_id,name,email,invited_to_dinner,invited_to_evening) VALUES (?,?,NULL,?,?)`).bind(invitationId,guest.name,guest.invitedToDinner?1:0,guest.invitedToEvening?1:0))
+      const statements = normalizedGuests.map((guest) =>
+        db.prepare(`INSERT INTO guests (invitation_id,name,email,invited_to_dinner,invited_to_evening) VALUES (?,?,NULL,?,?)`)
+          .bind(invitationId, guest.name, guest.invitedToDinner ? 1 : 0, guest.invitedToEvening ? 1 : 0)
+      )
       await db.batch(statements)
 
       console.log(`Invitation ${code} created by ${identity.email ?? 'unknown'} for ${normalizedGuests.length} guest(s)`)
-      return Response.json({ ok: true, invitation: { id: invitationId, invitationCode: code, active: true, guests: normalizedGuests.map(({name,invitedToDinner,invitedToEvening}) => ({name,invitedToDinner,invitedToEvening})) } })
+
+      return Response.json({
+        ok: true,
+        invitation: {
+          id: invitationId,
+          invitationCode: code,
+          active: true,
+          guests: normalizedGuests.map(({ name, invitedToDinner, invitedToEvening }) => ({ name, invitedToDinner, invitedToEvening }))
+        }
+      })
     } catch (error) {
       if (String(error?.message || '').toLowerCase().includes('unique')) continue
       console.error('Invitation creation failed:', error)
@@ -323,18 +318,22 @@ async function handleAdminInvitationCreate(request, env, identity) {
 function generateInvitationCode() {
   const values = new Uint32Array(6)
   crypto.getRandomValues(values)
-  return `MG-${Array.from(values, value => CODE_ALPHABET[value % CODE_ALPHABET.length]).join('')}`
+  return `MG-${Array.from(values, (value) => CODE_ALPHABET[value % CODE_ALPHABET.length]).join('')}`
 }
 
 async function handleAdminInvitationToggle(request, env, identity) {
   let body
-  try { body = await request.json() } catch { return Response.json({ ok:false, error:'Invalid JSON' }, { status:400 }) }
+  try {
+    body = await request.json()
+  } catch {
+    return Response.json({ ok: false, error: 'Invalid JSON' }, { status: 400 })
+  }
 
   const id = Number(body?.id)
   const active = body?.active
 
   if (!Number.isInteger(id) || typeof active !== 'boolean') {
-    return Response.json({ ok:false, error:'Invalid invitation data' }, { status:400 })
+    return Response.json({ ok: false, error: 'Invalid invitation data' }, { status: 400 })
   }
 
   try {
@@ -344,13 +343,13 @@ async function handleAdminInvitationToggle(request, env, identity) {
       .run()
 
     if (result.meta.changes === 0) {
-      return Response.json({ ok:false, error:'Invitation not found' }, { status:404 })
+      return Response.json({ ok: false, error: 'Invitation not found' }, { status: 404 })
     }
 
     console.log(`Invitation ${id} set to ${active ? 'active' : 'inactive'} by ${identity.email ?? 'unknown'}`)
-    return Response.json({ ok:true })
+    return Response.json({ ok: true })
   } catch (error) {
     console.error('Invitation toggle failed:', error)
-    return Response.json({ ok:false, error:'Unable to update invitation' }, { status:500 })
+    return Response.json({ ok: false, error: 'Unable to update invitation' }, { status: 500 })
   }
 }
