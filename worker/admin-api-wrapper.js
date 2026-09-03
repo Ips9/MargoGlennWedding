@@ -1,4 +1,5 @@
 import legacyWorker from './index.js'
+import { getAccessIdentity } from './access.js'
 
 const CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
 const PHOTO_QUOTA_BYTES = 10_000_000_000
@@ -8,10 +9,6 @@ const PHOTO_MIME_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp'])
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url)
-
-    if (url.pathname === '/wedding-preview.html' && request.method === 'GET' && env.ASSETS) {
-      return injectPreviewApp(request, env)
-    }
 
     if (url.pathname === '/api/invitation' && request.method === 'GET') {
       return handlePublicInvitation(request, env)
@@ -33,7 +30,7 @@ export default {
       return legacyWorker.fetch(request, env, ctx)
     }
 
-    const identity = await getAdminIdentity(request, ctx)
+    const identity = await getAccessIdentity(request, env, ctx)
     if (!identity) {
       return Response.json({ ok: false, error: 'Unauthorized' }, { status: 401 })
     }
@@ -56,33 +53,6 @@ export default {
 
     return Response.json({ ok: false, error: 'Not found' }, { status: 404 })
   }
-}
-
-async function injectPreviewApp(request, env) {
-  const response = await env.ASSETS.fetch(request)
-  if (!response.ok) return response
-
-  return new HTMLRewriter()
-    .on('body', {
-      element(element) {
-        element.append('<script src="/wedding-preview-app.js"></script>', { html: true })
-      }
-    })
-    .transform(response)
-}
-
-async function getAdminIdentity(request, ctx) {
-  if (ctx.access) {
-    try {
-      const identity = await ctx.access.getIdentity()
-      if (identity) return identity
-    } catch (error) {
-      console.error('Cloudflare Access identity lookup failed:', error)
-    }
-  }
-
-  const email = request.headers.get('cf-access-authenticated-user-email')
-  return email ? { email } : null
 }
 
 async function handlePublicInvitation(request, env) {
@@ -211,18 +181,20 @@ async function handlePublicMusicCreate(request, env) {
   }
 
   try {
-    const recent = await env.margo_glenn_wedding_db.prepare(`
-      SELECT COUNT(*) AS count
-      FROM music_suggestions
-      WHERE source_ip = ?
-        AND created_at >= datetime('now', '-1 hour')
-    `).bind(ip).first()
+    // Check both limits inside the write, so concurrent requests cannot race.
+    const result = await env.margo_glenn_wedding_db.prepare(`
+      INSERT INTO music_suggestions (title, artist, suggested_by, source_ip)
+      SELECT ?, ?, ?, ?
+      WHERE NOT EXISTS (
+        SELECT 1 FROM music_suggestions WHERE lower(title) = lower(?) AND lower(artist) = lower(?)
+      ) AND (
+        SELECT COUNT(*) FROM music_suggestions
+        WHERE source_ip = ? AND created_at >= datetime('now', '-1 hour')
+      ) < 8
+    `).bind(title, artist, suggestedBy || null, ip, title, artist, ip).run()
 
-    if (Number(recent?.count || 0) >= 8) {
-      return Response.json({ ok: false, error: 'Je hebt al heel wat nummers voorgesteld. Probeer het over een uurtje opnieuw. ♡' }, { status: 429 })
-    }
-
-    const duplicate = await env.margo_glenn_wedding_db.prepare(`
+    if (result.meta.changes !== 1) {
+      const duplicate = await env.margo_glenn_wedding_db.prepare(`
       SELECT id
       FROM music_suggestions
       WHERE lower(title) = lower(?)
@@ -230,14 +202,11 @@ async function handlePublicMusicCreate(request, env) {
       LIMIT 1
     `).bind(title, artist).first()
 
-    if (duplicate) {
-      return Response.json({ ok: true, duplicate: true, message: 'Dit nummer staat al op de lijst. ♡' })
+      if (duplicate) {
+        return Response.json({ ok: true, duplicate: true, message: 'Dit nummer staat al op de lijst. ♡' })
+      }
+      return Response.json({ ok: false, error: 'Je hebt al heel wat nummers voorgesteld. Probeer het over een uurtje opnieuw. ♡' }, { status: 429, headers: { 'Retry-After': '3600' } })
     }
-
-    const result = await env.margo_glenn_wedding_db.prepare(`
-      INSERT INTO music_suggestions (title, artist, suggested_by, source_ip)
-      VALUES (?, ?, ?, ?)
-    `).bind(title, artist, suggestedBy || null, ip).run()
 
     return Response.json({
       ok: true,
@@ -301,7 +270,7 @@ async function handlePublicPhotoList(request, env) {
         remainingBytes: Math.max(0, PHOTO_QUOTA_BYTES - usedBytes),
         uploadAvailable: usedBytes < PHOTO_QUOTA_BYTES
       }
-    })
+    }, { headers: { 'Cache-Control': 'private, no-store' } })
   } catch (error) {
     console.error('Photo list failed:', error)
     return Response.json({ ok: false, error: 'Foto\'s konden niet worden geladen.' }, { status: 500 })
@@ -329,6 +298,7 @@ async function handlePublicPhotoUpload(request, env) {
 
   const db = env.margo_glenn_wedding_db
   let reserved = false
+  let key
 
   try {
     const reserve = await db.prepare(`
@@ -348,12 +318,12 @@ async function handlePublicPhotoUpload(request, env) {
     reserved = true
 
     const extension = file.type === 'image/jpeg' ? 'jpg' : file.type === 'image/png' ? 'png' : 'webp'
-    const key = `photos/${invitation.id}/${crypto.randomUUID()}.${extension}`
+    key = `photos/${invitation.id}/${crypto.randomUUID()}.${extension}`
 
     await env.WEDDING_PHOTOS.put(key, file.stream(), {
       httpMetadata: {
         contentType: file.type,
-        cacheControl: 'public, max-age=31536000, immutable'
+        cacheControl: 'private, no-store'
       }
     })
 
@@ -374,7 +344,14 @@ async function handlePublicPhotoUpload(request, env) {
   } catch (error) {
     console.error('Photo upload failed:', error)
     if (reserved) {
-      await db.prepare(`UPDATE wedding_photo_quota SET used_bytes = MAX(0, used_bytes - ?) WHERE id = 1`).bind(file.size).run().catch(() => {})
+      // Remove the object before releasing its quota, including uncertain puts.
+      // If cleanup fails, retain the reservation to avoid undercounting storage.
+      try {
+        if (key) await env.WEDDING_PHOTOS.delete(key)
+        await db.prepare(`UPDATE wedding_photo_quota SET used_bytes = MAX(0, used_bytes - ?) WHERE id = 1`).bind(file.size).run()
+      } catch (cleanupError) {
+        console.error('Photo cleanup failed; quota reservation retained:', cleanupError)
+      }
     }
     return Response.json({ ok: false, error: 'De foto kon niet worden opgeslagen. Probeer opnieuw.' }, { status: 500 })
   }
@@ -406,7 +383,9 @@ async function handlePublicPhoto(request, env) {
     const headers = new Headers()
     object.writeHttpMetadata(headers)
     headers.set('etag', object.httpEtag)
-    headers.set('cache-control', 'public, max-age=31536000, immutable')
+    headers.set('cache-control', 'private, no-store')
+    headers.set('x-content-type-options', 'nosniff')
+    headers.set('referrer-policy', 'no-referrer')
     return new Response(object.body, { headers })
   } catch (error) {
     console.error('Photo read failed:', error)
@@ -518,15 +497,13 @@ async function handleAdminInvitationCreate(request, env, identity) {
   for (let attempt = 0; attempt < 10; attempt++) {
     const code = generateInvitationCode()
     try {
-      const insertResult = await db.prepare(`INSERT INTO invitations (invitation_code, active) VALUES (?,1)`).bind(code).run()
-      const invitationId = insertResult.meta.last_row_id
-      if (!invitationId) throw new Error('Invitation ID was not returned')
-
-      const statements = normalizedGuests.map((guest) =>
-        db.prepare(`INSERT INTO guests (invitation_id,name,email,invited_to_dinner,invited_to_evening) VALUES (?,?,NULL,?,?)`)
-          .bind(invitationId, guest.name, guest.invitedToDinner ? 1 : 0, guest.invitedToEvening ? 1 : 0)
-      )
-      await db.batch(statements)
+      const statements = [db.prepare(`INSERT INTO invitations (invitation_code, active) VALUES (?,1)`).bind(code)]
+      statements.push(...normalizedGuests.map((guest) =>
+        db.prepare(`INSERT INTO guests (invitation_id,name,email,invited_to_dinner,invited_to_evening) VALUES ((SELECT id FROM invitations WHERE invitation_code=?),?,NULL,?,?)`)
+          .bind(code, guest.name, guest.invitedToDinner ? 1 : 0, guest.invitedToEvening ? 1 : 0)
+      ))
+      const results = await db.batch(statements)
+      const invitationId = results[0].meta.last_row_id
 
       console.log(`Invitation ${code} created by ${identity.email ?? 'unknown'} for ${normalizedGuests.length} guest(s)`)
 
@@ -588,11 +565,16 @@ async function handleAdminInvitationToggle(request, env, identity) {
   }
 }
 
-function withTimeout(promise, milliseconds) {
-  return Promise.race([
-    promise,
-    new Promise((_, reject) => {
-      setTimeout(() => reject(new Error(`Operation timed out after ${milliseconds}ms`)), milliseconds)
-    })
-  ])
+async function withTimeout(promise, milliseconds) {
+  let timer
+  try {
+    return await Promise.race([
+      promise,
+      new Promise((_, reject) => {
+        timer = setTimeout(() => reject(new Error(`Operation timed out after ${milliseconds}ms`)), milliseconds)
+      })
+    ])
+  } finally {
+    clearTimeout(timer)
+  }
 }

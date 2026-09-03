@@ -1,3 +1,5 @@
+import { getAccessIdentity } from './access.js'
+
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url)
@@ -10,33 +12,13 @@ export default {
   }
 }
 
-async function getAccessIdentity(request, ctx) {
-  // Direct Worker Access authentication, when available.
-  if (ctx.access) {
-    try {
-      const identity = await ctx.access.getIdentity()
-      if (identity) return identity
-    } catch (error) {
-      console.error('Cloudflare Access identity lookup failed:', error)
-    }
-  }
-
-  // With Static Assets, Cloudflare's internal assets router does not pass
-  // ctx.access to the user Worker. Access still authenticates the request and
-  // supplies the authenticated email header to the Worker.
-  const email = request.headers.get('cf-access-authenticated-user-email')
-  if (email) return { email }
-
-  return null
-}
-
 async function handleAdminPage(request, env, ctx) {
-  if (!await getAccessIdentity(request, ctx)) return new Response('Unauthorized',{status:401})
+  if (!await getAccessIdentity(request, env, ctx)) return new Response('Unauthorized',{status:401})
   return env.ASSETS.fetch(new Request(new URL('/admin.html',request.url),request))
 }
 
 async function handleAdminApi(request, env, ctx) {
-  const identity = await getAccessIdentity(request, ctx)
+  const identity = await getAccessIdentity(request, env, ctx)
   if (!identity) return Response.json({ok:false,error:'Unauthorized'},{status:401})
   const url = new URL(request.url)
   if (url.pathname === '/admin/api/health' && request.method === 'GET') return Response.json({ok:true,authenticated:true,email:identity.email??null})
@@ -167,7 +149,8 @@ async function handleRsvp(request, env) {
       if (guest.invited_to_evening===1 && (!submitted.evening || !['attending','declined'].includes(submitted.evening.status))) return Response.json({ok:false,error:'Evening RSVP is required'},{status:400})
       if (guest.invited_to_dinner!==1 && submitted.dinner!==undefined) return Response.json({ok:false,error:'Guest is not invited to dinner'},{status:400})
       if (guest.invited_to_evening!==1 && submitted.evening!==undefined) return Response.json({ok:false,error:'Guest is not invited to evening'},{status:400})
-      const requirements=Array.isArray(submitted.dietaryRequirements)?submitted.dietaryRequirements:[]
+      const requirements=submitted.dietaryRequirements ?? []
+      if (!Array.isArray(requirements)) return Response.json({ok:false,error:'Invalid dietary requirements'},{status:400})
       const attending=(submitted.dinner?.status==='attending')||(submitted.evening?.status==='attending')
       if (!attending && requirements.length) return Response.json({ok:false,error:'Dietary requirements require attendance'},{status:400})
       const dietaryError=validateDietaryRequirements(requirements)
@@ -189,6 +172,7 @@ async function handleRsvp(request, env) {
       statements.push(db.prepare(`UPDATE guests SET email=?,updated_at=CURRENT_TIMESTAMP WHERE id=?`).bind(email||null,guestId))
       statements.push(db.prepare(`DELETE FROM guest_dietary_requirements WHERE guest_id=?`).bind(guestId))
       const attending=(submitted.dinner?.status==='attending')||(submitted.evening?.status==='attending')
+      statements.push(db.prepare(`UPDATE guests SET rsvp_status=? WHERE id=?`).bind(attending?'attending':'declined',guestId))
       if (attending) {
         const storageEventPart=guest.invited_to_dinner===1?'dinner':'evening'
         for (const requirement of submitted.dietaryRequirements||[]) {
