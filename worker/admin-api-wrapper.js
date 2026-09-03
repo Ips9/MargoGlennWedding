@@ -1,13 +1,32 @@
 import legacyWorker from './index.js'
 
 const CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
+const PHOTO_QUOTA_BYTES = 10_000_000_000
+const MAX_PHOTO_BYTES = 10 * 1024 * 1024
+const PHOTO_MIME_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp'])
 
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url)
 
+    if (url.pathname === '/wedding-preview.html' && request.method === 'GET' && env.ASSETS) {
+      return injectPreviewApp(request, env)
+    }
+
     if (url.pathname === '/api/invitation' && request.method === 'GET') {
       return handlePublicInvitation(request, env)
+    }
+
+    if (url.pathname === '/api/music/suggestions' && (request.method === 'GET' || request.method === 'POST')) {
+      return request.method === 'GET' ? handlePublicMusicList(env) : handlePublicMusicCreate(request, env)
+    }
+
+    if (url.pathname === '/api/photos' && (request.method === 'GET' || request.method === 'POST')) {
+      return request.method === 'GET' ? handlePublicPhotoList(request, env) : handlePublicPhotoUpload(request, env)
+    }
+
+    if (url.pathname === '/api/photo' && request.method === 'GET') {
+      return handlePublicPhoto(request, env)
     }
 
     if (!url.pathname.startsWith('/admin/api/')) {
@@ -37,6 +56,19 @@ export default {
 
     return Response.json({ ok: false, error: 'Not found' }, { status: 404 })
   }
+}
+
+async function injectPreviewApp(request, env) {
+  const response = await env.ASSETS.fetch(request)
+  if (!response.ok) return response
+
+  return new HTMLRewriter()
+    .on('body', {
+      element(element) {
+        element.append('<script src="/wedding-preview-app.js"></script>', { html: true })
+      }
+    })
+    .transform(response)
 }
 
 async function getAdminIdentity(request, ctx) {
@@ -142,13 +174,244 @@ async function handlePublicInvitation(request, env) {
   }
 }
 
-function withTimeout(promise, milliseconds) {
-  return Promise.race([
-    promise,
-    new Promise((_, reject) => {
-      setTimeout(() => reject(new Error(`Operation timed out after ${milliseconds}ms`)), milliseconds)
+async function handlePublicMusicList(env) {
+  try {
+    const result = await env.margo_glenn_wedding_db.prepare(`
+      SELECT id, title, artist, suggested_by, created_at
+      FROM music_suggestions
+      ORDER BY created_at DESC, id DESC
+      LIMIT 100
+    `).all()
+
+    return Response.json({ ok: true, suggestions: result.results })
+  } catch (error) {
+    console.error('Music suggestion list failed:', error)
+    return Response.json({ ok: false, error: 'Muzieksuggesties konden niet worden geladen.' }, { status: 500 })
+  }
+}
+
+async function handlePublicMusicCreate(request, env) {
+  let body
+  try {
+    body = await request.json()
+  } catch {
+    return Response.json({ ok: false, error: 'Ongeldige aanvraag.' }, { status: 400 })
+  }
+
+  const title = typeof body?.title === 'string' ? body.title.trim() : ''
+  const artist = typeof body?.artist === 'string' ? body.artist.trim() : ''
+  const suggestedBy = typeof body?.suggestedBy === 'string' ? body.suggestedBy.trim() : ''
+  const ip = request.headers.get('CF-Connecting-IP') || 'unknown'
+
+  if (!title || title.length > 120 || !artist || artist.length > 120) {
+    return Response.json({ ok: false, error: 'Vul een geldige titel en artiest in.' }, { status: 400 })
+  }
+  if (suggestedBy.length > 80) {
+    return Response.json({ ok: false, error: 'De naam is te lang.' }, { status: 400 })
+  }
+
+  try {
+    const recent = await env.margo_glenn_wedding_db.prepare(`
+      SELECT COUNT(*) AS count
+      FROM music_suggestions
+      WHERE source_ip = ?
+        AND created_at >= datetime('now', '-1 hour')
+    `).bind(ip).first()
+
+    if (Number(recent?.count || 0) >= 8) {
+      return Response.json({ ok: false, error: 'Je hebt al heel wat nummers voorgesteld. Probeer het over een uurtje opnieuw. ♡' }, { status: 429 })
+    }
+
+    const duplicate = await env.margo_glenn_wedding_db.prepare(`
+      SELECT id
+      FROM music_suggestions
+      WHERE lower(title) = lower(?)
+        AND lower(artist) = lower(?)
+      LIMIT 1
+    `).bind(title, artist).first()
+
+    if (duplicate) {
+      return Response.json({ ok: true, duplicate: true, message: 'Dit nummer staat al op de lijst. ♡' })
+    }
+
+    const result = await env.margo_glenn_wedding_db.prepare(`
+      INSERT INTO music_suggestions (title, artist, suggested_by, source_ip)
+      VALUES (?, ?, ?, ?)
+    `).bind(title, artist, suggestedBy || null, ip).run()
+
+    return Response.json({
+      ok: true,
+      suggestion: {
+        id: result.meta.last_row_id,
+        title,
+        artist,
+        suggestedBy: suggestedBy || null
+      }
     })
-  ])
+  } catch (error) {
+    console.error('Music suggestion create failed:', error)
+    return Response.json({ ok: false, error: 'Je nummer kon niet worden toegevoegd.' }, { status: 500 })
+  }
+}
+
+async function findInvitation(code, env) {
+  const normalized = String(code || '').trim().toUpperCase()
+  if (!/^MG-[A-Z0-9]{6}$/.test(normalized)) return null
+
+  return env.margo_glenn_wedding_db.prepare(`
+    SELECT id, invitation_code
+    FROM invitations
+    WHERE invitation_code = ? AND active = 1
+    LIMIT 1
+  `).bind(normalized).first()
+}
+
+async function handlePublicPhotoList(request, env) {
+  const url = new URL(request.url)
+  const code = url.searchParams.get('code') || ''
+  const invitation = await findInvitation(code, env)
+
+  if (!invitation) return Response.json({ ok: false, error: 'Deze fotosectie is niet beschikbaar voor deze code.' }, { status: 404 })
+  if (!env.WEDDING_PHOTOS) return Response.json({ ok: false, error: 'Fotodelen is nog niet geconfigureerd.' }, { status: 503 })
+
+  try {
+    const [photos, quota] = await Promise.all([
+      env.margo_glenn_wedding_db.prepare(`
+        SELECT id, original_filename, mime_type, size_bytes, uploaded_at
+        FROM wedding_photos
+        WHERE invitation_id = ? AND approved = 1
+        ORDER BY uploaded_at DESC, id DESC
+      `).bind(invitation.id).all(),
+      env.margo_glenn_wedding_db.prepare(`SELECT used_bytes FROM wedding_photo_quota WHERE id = 1`).first()
+    ])
+
+    const usedBytes = Number(quota?.used_bytes || 0)
+    return Response.json({
+      ok: true,
+      photos: photos.results.map((photo) => ({
+        id: photo.id,
+        filename: photo.original_filename,
+        sizeBytes: Number(photo.size_bytes),
+        uploadedAt: photo.uploaded_at,
+        url: `/api/photo?id=${encodeURIComponent(photo.id)}&code=${encodeURIComponent(String(code).trim().toUpperCase())}`
+      })),
+      quota: {
+        usedBytes,
+        limitBytes: PHOTO_QUOTA_BYTES,
+        remainingBytes: Math.max(0, PHOTO_QUOTA_BYTES - usedBytes),
+        uploadAvailable: usedBytes < PHOTO_QUOTA_BYTES
+      }
+    })
+  } catch (error) {
+    console.error('Photo list failed:', error)
+    return Response.json({ ok: false, error: 'Foto\'s konden niet worden geladen.' }, { status: 500 })
+  }
+}
+
+async function handlePublicPhotoUpload(request, env) {
+  if (!env.WEDDING_PHOTOS) return Response.json({ ok: false, error: 'Fotodelen is nog niet geconfigureerd.' }, { status: 503 })
+
+  let form
+  try {
+    form = await request.formData()
+  } catch {
+    return Response.json({ ok: false, error: 'Ongeldige upload.' }, { status: 400 })
+  }
+
+  const code = typeof form.get('code') === 'string' ? form.get('code') : ''
+  const invitation = await findInvitation(code, env)
+  if (!invitation) return Response.json({ ok: false, error: 'Deze fotosectie is niet beschikbaar voor deze code.' }, { status: 404 })
+
+  const file = form.get('photo')
+  if (!(file instanceof File)) return Response.json({ ok: false, error: 'Kies eerst een foto.' }, { status: 400 })
+  if (!PHOTO_MIME_TYPES.has(file.type)) return Response.json({ ok: false, error: 'Gebruik een JPG-, PNG- of WebP-foto.' }, { status: 400 })
+  if (file.size <= 0 || file.size > MAX_PHOTO_BYTES) return Response.json({ ok: false, error: 'Een foto mag maximaal 10 MB groot zijn.' }, { status: 400 })
+
+  const db = env.margo_glenn_wedding_db
+  let reserved = false
+
+  try {
+    const reserve = await db.prepare(`
+      UPDATE wedding_photo_quota
+      SET used_bytes = used_bytes + ?
+      WHERE id = 1
+        AND used_bytes + ? <= ?
+    `).bind(file.size, file.size, PHOTO_QUOTA_BYTES).run()
+
+    if (reserve.meta.changes !== 1) {
+      return Response.json({
+        ok: false,
+        quotaReached: true,
+        error: 'De online fotoplaats is vol.'
+      }, { status: 507 })
+    }
+    reserved = true
+
+    const extension = file.type === 'image/jpeg' ? 'jpg' : file.type === 'image/png' ? 'png' : 'webp'
+    const key = `photos/${invitation.id}/${crypto.randomUUID()}.${extension}`
+
+    await env.WEDDING_PHOTOS.put(key, file.stream(), {
+      httpMetadata: {
+        contentType: file.type,
+        cacheControl: 'public, max-age=31536000, immutable'
+      }
+    })
+
+    const inserted = await db.prepare(`
+      INSERT INTO wedding_photos (invitation_id, storage_key, original_filename, mime_type, size_bytes, approved)
+      VALUES (?, ?, ?, ?, ?, 1)
+    `).bind(invitation.id, key, String(file.name || '').slice(0, 255) || null, file.type, file.size).run()
+
+    return Response.json({
+      ok: true,
+      photo: {
+        id: inserted.meta.last_row_id,
+        filename: file.name,
+        sizeBytes: file.size,
+        url: `/api/photo?id=${encodeURIComponent(inserted.meta.last_row_id)}&code=${encodeURIComponent(String(code).trim().toUpperCase())}`
+      }
+    })
+  } catch (error) {
+    console.error('Photo upload failed:', error)
+    if (reserved) {
+      await db.prepare(`UPDATE wedding_photo_quota SET used_bytes = MAX(0, used_bytes - ?) WHERE id = 1`).bind(file.size).run().catch(() => {})
+    }
+    return Response.json({ ok: false, error: 'De foto kon niet worden opgeslagen. Probeer opnieuw.' }, { status: 500 })
+  }
+}
+
+async function handlePublicPhoto(request, env) {
+  if (!env.WEDDING_PHOTOS) return new Response('Photo storage not configured', { status: 503 })
+
+  const url = new URL(request.url)
+  const id = Number(url.searchParams.get('id'))
+  const code = url.searchParams.get('code') || ''
+  const invitation = await findInvitation(code, env)
+
+  if (!Number.isInteger(id) || id <= 0 || !invitation) return new Response('Not found', { status: 404 })
+
+  try {
+    const photo = await env.margo_glenn_wedding_db.prepare(`
+      SELECT storage_key, mime_type
+      FROM wedding_photos
+      WHERE id = ? AND invitation_id = ? AND approved = 1
+      LIMIT 1
+    `).bind(id, invitation.id).first()
+
+    if (!photo) return new Response('Not found', { status: 404 })
+
+    const object = await env.WEDDING_PHOTOS.get(photo.storage_key)
+    if (!object) return new Response('Not found', { status: 404 })
+
+    const headers = new Headers()
+    object.writeHttpMetadata(headers)
+    headers.set('etag', object.httpEtag)
+    headers.set('cache-control', 'public, max-age=31536000, immutable')
+    return new Response(object.body, { headers })
+  } catch (error) {
+    console.error('Photo read failed:', error)
+    return new Response('Unable to load photo', { status: 500 })
+  }
 }
 
 async function handleAdminDashboard(env, identity) {
@@ -323,4 +586,13 @@ async function handleAdminInvitationToggle(request, env, identity) {
     console.error('Invitation toggle failed:', error)
     return Response.json({ ok: false, error: 'Unable to update invitation' }, { status: 500 })
   }
+}
+
+function withTimeout(promise, milliseconds) {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => {
+      setTimeout(() => reject(new Error(`Operation timed out after ${milliseconds}ms`)), milliseconds)
+    })
+  ])
 }
