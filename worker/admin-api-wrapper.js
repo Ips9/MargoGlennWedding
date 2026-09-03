@@ -6,6 +6,18 @@ export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url)
 
+    /*
+     * Public invitation lookup is handled directly here.
+     * This avoids routing the RSVP invitation request through the
+     * legacy worker chain and makes the production API path explicit.
+     */
+    if (
+      url.pathname === '/api/invitation' &&
+      request.method === 'GET'
+    ) {
+      return handlePublicInvitation(request, env)
+    }
+
     if (!url.pathname.startsWith('/admin/api/')) {
       return legacyWorker.fetch(request, env, ctx)
     }
@@ -51,6 +63,142 @@ async function getAdminIdentity(request, ctx) {
   return null
 }
 
+async function handlePublicInvitation(request, env) {
+  const url = new URL(request.url)
+  const rawCode = url.searchParams.get('code')
+  const code = typeof rawCode === 'string'
+    ? rawCode.trim().toUpperCase()
+    : ''
+
+  if (!/^MG-[A-Z0-9]{6}$/.test(code)) {
+    return Response.json(
+      { ok: false, error: 'Invalid invitation' },
+      { status: 404 }
+    )
+  }
+
+  try {
+    const db = env.margo_glenn_wedding_db
+
+    const invitation = await db
+      .prepare(`
+        SELECT id, active
+        FROM invitations
+        WHERE invitation_code = ?
+        LIMIT 1
+      `)
+      .bind(code)
+      .first()
+
+    if (!invitation || invitation.active !== 1) {
+      return Response.json(
+        { ok: false, error: 'Invalid invitation' },
+        { status: 404 }
+      )
+    }
+
+    const guestResult = await db
+      .prepare(`
+        SELECT
+          id,
+          name,
+          email,
+          invited_to_dinner,
+          invited_to_evening,
+          rsvp_status,
+          dinner_rsvp_status,
+          evening_rsvp_status
+        FROM guests
+        WHERE invitation_id = ?
+        ORDER BY id
+      `)
+      .bind(invitation.id)
+      .all()
+
+    if (!guestResult.results.length) {
+      return Response.json(
+        {
+          ok: true,
+          email: '',
+          guests: []
+        }
+      )
+    }
+
+    const dietaryResult = await db
+      .prepare(`
+        SELECT
+          d.id,
+          d.guest_id,
+          d.event_part,
+          d.category,
+          d.other_type,
+          d.other_text
+        FROM guest_dietary_requirements d
+        INNER JOIN guests g
+          ON g.id = d.guest_id
+        WHERE g.invitation_id = ?
+        ORDER BY d.guest_id, d.event_part, d.id
+      `)
+      .bind(invitation.id)
+      .all()
+
+    const guests = guestResult.results.map((guest) => {
+      const seenCategories = new Set()
+
+      const dietaryRequirements = dietaryResult.results
+        .filter((requirement) => requirement.guest_id === guest.id)
+        .filter((requirement) => {
+          if (seenCategories.has(requirement.category)) {
+            return false
+          }
+
+          seenCategories.add(requirement.category)
+          return true
+        })
+        .map((requirement) => ({
+          id: requirement.id,
+          eventPart: requirement.event_part,
+          category: requirement.category,
+          otherType: requirement.other_type,
+          otherText: requirement.other_text
+        }))
+
+      return {
+        id: guest.id,
+        name: guest.name,
+        email: guest.email || '',
+        invitedToDinner: guest.invited_to_dinner === 1,
+        invitedToEvening: guest.invited_to_evening === 1,
+        rsvpStatus: guest.rsvp_status,
+        dinnerRsvpStatus: guest.dinner_rsvp_status,
+        eveningRsvpStatus: guest.evening_rsvp_status,
+        dietaryRequirements
+      }
+    })
+
+    const email = guestResult.results.find((guest) => guest.email)?.email || ''
+
+    return Response.json({
+      ok: true,
+      email,
+      guests
+    })
+  } catch (error) {
+    console.error('Public invitation lookup failed:', error)
+
+    return Response.json(
+      {
+        ok: false,
+        error: 'Unable to process invitation'
+      },
+      {
+        status: 500
+      }
+    )
+  }
+}
+
 async function handleAdminDashboard(env, identity) {
   try {
     const db = env.margo_glenn_wedding_db
@@ -69,49 +217,54 @@ async function handleAdminDashboard(env, identity) {
             seen.add(r.category)
             return true
           })
-          .map(r => ({ id: r.id, category: r.category, otherText: r.other_text }))
+          .map(r => ({ id:r.id, category:r.category, otherText:r.other_text }))
 
         const rsvpHistory = rsvpResult.results
           .filter(r => r.guest_id === guest.id)
-          .map(r => ({ id: r.id, status: r.status, eventPart: r.event_part, createdAt: r.created_at }))
+          .map(r => ({ id:r.id, status:r.status, eventPart:r.event_part, createdAt:r.created_at }))
 
         return {
-          id: guest.id,
-          name: guest.name,
-          email: guest.email || null,
-          invitedToDinner: guest.invited_to_dinner === 1,
-          invitedToEvening: guest.invited_to_evening === 1,
-          rsvpStatus: guest.rsvp_status,
-          dinnerRsvpStatus: guest.dinner_rsvp_status,
-          eveningRsvpStatus: guest.evening_rsvp_status,
+          id:guest.id,
+          name:guest.name,
+          email:guest.email||null,
+          invitedToDinner:guest.invited_to_dinner===1,
+          invitedToEvening:guest.invited_to_evening===1,
+          rsvpStatus:guest.rsvp_status,
+          dinnerRsvpStatus:guest.dinner_rsvp_status,
+          eveningRsvpStatus:guest.evening_rsvp_status,
           dietaryRequirements,
           rsvpHistory
         }
       })
 
       return {
-        id: invitation.id,
-        invitationCode: invitation.invitation_code,
-        active: invitation.active === 1,
+        id:invitation.id,
+        invitationCode:invitation.invitation_code,
+        active:invitation.active===1,
         guests
       }
     })
 
     const allGuests = guestResult.results
     const summary = {
-      invitations: invitations.length,
-      activeInvitations: invitations.filter(i => i.active).length,
-      guests: allGuests.length,
-      dinnerAttending: allGuests.filter(g => g.dinner_rsvp_status === 'attending').length,
-      dinnerDeclined: allGuests.filter(g => g.dinner_rsvp_status === 'declined').length,
-      eveningAttending: allGuests.filter(g => g.evening_rsvp_status === 'attending').length,
-      eveningDeclined: allGuests.filter(g => g.evening_rsvp_status === 'declined').length
+      invitations:invitations.length,
+      activeInvitations:invitations.filter(i=>i.active).length,
+      guests:allGuests.length,
+      dinnerAttending:allGuests.filter(g=>g.dinner_rsvp_status==='attending').length,
+      dinnerDeclined:allGuests.filter(g=>g.dinner_rsvp_status==='declined').length,
+      eveningAttending:allGuests.filter(g=>g.evening_rsvp_status==='attending').length,
+      eveningDeclined:allGuests.filter(g=>g.evening_rsvp_status==='declined').length
     }
 
-    return Response.json({ ok: true, admin: { email: identity.email ?? null }, summary, invitations })
+    return Response.json({
+      ok:true,
+      admin:{email:identity.email??null},
+      summary,
+      invitations
+    })
   } catch (error) {
-    console.error('Admin dashboard failed:', error)
-    return Response.json({ ok: false, error: 'Unable to load admin dashboard' }, { status: 500 })
+    console.error('Admin dashboard failed:',error)
+    return Response.json({ok:false,error:'Unable to load admin dashboard'},{status:500})
   }
 }
 
@@ -175,16 +328,13 @@ function generateInvitationCode() {
 
 async function handleAdminInvitationToggle(request, env, identity) {
   let body
-  try {
-    body = await request.json()
-  } catch {
-    return Response.json({ ok: false, error: 'Invalid JSON' }, { status: 400 })
-  }
+  try { body = await request.json() } catch { return Response.json({ ok:false, error:'Invalid JSON' }, { status:400 }) }
 
   const id = Number(body?.id)
   const active = body?.active
+
   if (!Number.isInteger(id) || typeof active !== 'boolean') {
-    return Response.json({ ok: false, error: 'Invalid invitation data' }, { status: 400 })
+    return Response.json({ ok:false, error:'Invalid invitation data' }, { status:400 })
   }
 
   try {
@@ -194,13 +344,13 @@ async function handleAdminInvitationToggle(request, env, identity) {
       .run()
 
     if (result.meta.changes === 0) {
-      return Response.json({ ok: false, error: 'Invitation not found' }, { status: 404 })
+      return Response.json({ ok:false, error:'Invitation not found' }, { status:404 })
     }
 
     console.log(`Invitation ${id} set to ${active ? 'active' : 'inactive'} by ${identity.email ?? 'unknown'}`)
-    return Response.json({ ok: true })
+    return Response.json({ ok:true })
   } catch (error) {
     console.error('Invitation toggle failed:', error)
-    return Response.json({ ok: false, error: 'Unable to update invitation' }, { status: 500 })
+    return Response.json({ ok:false, error:'Unable to update invitation' }, { status:500 })
   }
 }
