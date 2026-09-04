@@ -20,6 +20,8 @@
 <div class="card"><div class="card-label">Diner niet aanwezig</div><div class="card-value" id="statDinnerDeclined">—</div></div>
 <div class="card"><div class="card-label">Avond aanwezig</div><div class="card-value" id="statEveningAttending">—</div></div>
 <div class="card"><div class="card-label">Avond niet aanwezig</div><div class="card-value" id="statEveningDeclined">—</div></div>
+<div class="card"><div class="card-label">Liedjes aangevraagd</div><div class="card-value" id="statSongs">—</div></div>
+<div class="card"><div class="card-label">Foto's gedeeld</div><div class="card-value" id="statPhotos">—</div></div>
 </div>
 
 <section class="section">
@@ -104,12 +106,21 @@ async function loadDashboard(){
   document.getElementById('statDinnerDeclined').textContent=data.summary.dinnerDeclined;
   document.getElementById('statEveningAttending').textContent=data.summary.eveningAttending;
   document.getElementById('statEveningDeclined').textContent=data.summary.eveningDeclined;
+  const invitations=Array.isArray(data.invitations)?data.invitations:[];
+  document.getElementById('statSongs').textContent=invitations.filter(invitation=>invitation.song).length;
+  document.getElementById('statPhotos').textContent=invitations.reduce((total,invitation)=>total+(Number(invitation.photoCount)||0),0);
   container.innerHTML=Array.isArray(data.invitations)&&data.invitations.length?data.invitations.map(renderInvitation).join(''):'<p class="empty">Nog geen uitnodigingen.</p>';
  }catch(error){console.error(error);errorContainer.innerHTML=`<div class="error">${escapeHtml(error.message)}</div>`;container.innerHTML=''}
 }
 function renderInvitation(invitation){
  const guests=Array.isArray(invitation.guests)?invitation.guests:[];
- return `<div class="invitation"><div class="invitation-head"><div><div class="invitation-code">${escapeHtml(invitation.invitationCode)}</div><div class="invitation-meta"><span class="status ${invitation.active?'status-active':'status-inactive'}">${invitation.active?'Actief':'Inactief'}</span><span>${guests.length} ${guests.length===1?'gast':'gasten'}</span></div></div><button onclick="toggleInvitation(${invitation.id},${!invitation.active})">${invitation.active?'Deactiveren':'Activeren'}</button></div>${guests.length?guests.map(renderGuest).join(''):'<div class="guest empty">Geen gasten.</div>'}</div>`
+ return `<div class="invitation"><div class="invitation-head"><div><div class="invitation-code">${escapeHtml(invitation.invitationCode)}</div><div class="invitation-meta"><span class="status ${invitation.active?'status-active':'status-inactive'}">${invitation.active?'Actief':'Inactief'}</span><span>${guests.length} ${guests.length===1?'gast':'gasten'}</span></div></div><button onclick="toggleInvitation(${invitation.id},${!invitation.active})">${invitation.active?'Deactiveren':'Activeren'}</button></div>${renderGuestContributions(invitation)}${guests.length?guests.map(renderGuest).join(''):'<div class="guest empty">Geen gasten.</div>'}</div>`
+}
+function renderGuestContributions(invitation){
+ const song=invitation.song;
+ const photoCount=Number(invitation.photoCount)||0;
+ const music=song?`<div class="dietary-title">Liedje voor de dansvloer</div><div>${escapeHtml(song.title)} — ${escapeHtml(song.artist)}</div><div class="dietary-item">Aangevraagd door: ${escapeHtml(song.requestedBy||invitation.guests.map(guest=>guest.name).join(' & '))}</div><a href="https://open.spotify.com/search/${encodeURIComponent(`${song.title} ${song.artist}`)}" target="_blank" rel="noopener noreferrer">Zoeken op Spotify ↗</a>`:'<div class="empty">Geen liedje aangevraagd.</div>';
+ return `<div class="guest"><div class="dietary" style="margin-top:0">${music}<div class="dietary-item" style="margin-top:12px">${photoCount} ${photoCount===1?'foto':'foto’s'} gedeeld via deze uitnodiging</div></div></div>`;
 }
 function renderGuest(guest){
  const statuses=[];

@@ -1,3 +1,7 @@
+import { getAccessIdentity } from './access.js'
+import { normalizeInvitationCode } from './guest-security.js'
+import { prepareRsvpChanges } from './rsvp.js'
+
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url)
@@ -10,33 +14,13 @@ export default {
   }
 }
 
-async function getAccessIdentity(request, ctx) {
-  // Direct Worker Access authentication, when available.
-  if (ctx.access) {
-    try {
-      const identity = await ctx.access.getIdentity()
-      if (identity) return identity
-    } catch (error) {
-      console.error('Cloudflare Access identity lookup failed:', error)
-    }
-  }
-
-  // With Static Assets, Cloudflare's internal assets router does not pass
-  // ctx.access to the user Worker. Access still authenticates the request and
-  // supplies the authenticated email header to the Worker.
-  const email = request.headers.get('cf-access-authenticated-user-email')
-  if (email) return { email }
-
-  return null
-}
-
 async function handleAdminPage(request, env, ctx) {
-  if (!await getAccessIdentity(request, ctx)) return new Response('Unauthorized',{status:401})
+  if (!await getAccessIdentity(request, env, ctx)) return new Response('Unauthorized',{status:401})
   return env.ASSETS.fetch(new Request(new URL('/admin.html',request.url),request))
 }
 
 async function handleAdminApi(request, env, ctx) {
-  const identity = await getAccessIdentity(request, ctx)
+  const identity = await getAccessIdentity(request, env, ctx)
   if (!identity) return Response.json({ok:false,error:'Unauthorized'},{status:401})
   const url = new URL(request.url)
   if (url.pathname === '/admin/api/health' && request.method === 'GET') return Response.json({ok:true,authenticated:true,email:identity.email??null})
@@ -113,8 +97,8 @@ async function handleAdminInvitationToggle(request, env, identity) {
 async function handleInvitation(request, env) {
   if (request.method!=='GET') return Response.json({ok:false,error:'Method not allowed'},{status:405,headers:{Allow:'GET'}})
   const rawCode=new URL(request.url).searchParams.get('code')
-  const code=typeof rawCode==='string'?rawCode.trim().toUpperCase():''
-  if (!/^MG-[A-Z0-9]{6}$/.test(code)) return Response.json({ok:false,error:'Invalid invitation'},{status:404})
+  const code=normalizeInvitationCode(rawCode, env)
+  if (!code) return Response.json({ok:false,error:'Invalid invitation'},{status:404})
   try {
     const db=env.margo_glenn_wedding_db
     const invitation=await db.prepare(`SELECT id,active FROM invitations WHERE invitation_code=? LIMIT 1`).bind(code).first()
@@ -135,89 +119,21 @@ async function handleInvitation(request, env) {
 }
 
 async function handleRsvp(request, env) {
-  if (request.method!=='POST') return Response.json({ok:false,error:'Method not allowed'},{status:405,headers:{Allow:'POST'}})
+  if (request.method !== 'POST') return Response.json({ok:false,error:'Method not allowed'}, {status:405,headers:{Allow:'POST'}})
   let body
-  try { body=await request.json() } catch { return Response.json({ok:false,error:'Invalid JSON'},{status:400}) }
-  const code=typeof body?.code==='string'?body.code.trim().toUpperCase():''
-  if (!/^MG-[A-Z0-9]{6}$/.test(code)) return Response.json({ok:false,error:'Invalid invitation'},{status:404})
-  if (!Array.isArray(body?.guests)||body.guests.length===0) return Response.json({ok:false,error:'Invalid guest data'},{status:400})
-
-  const email=typeof body.email==='string'?body.email.trim():''
-  if (email && (email.length>254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))) return Response.json({ok:false,error:'Ongeldig e-mailadres'},{status:400})
-
+  try { body = await request.json() } catch { return Response.json({ok:false,error:'Invalid JSON'}, {status:400}) }
+  const code = normalizeInvitationCode(body?.code, env)
+  if (!code) return Response.json({ok:false,error:'Invalid invitation'}, {status:404})
   try {
-    const db=env.margo_glenn_wedding_db
-    const invitation=await db.prepare(`SELECT id,active FROM invitations WHERE invitation_code=? LIMIT 1`).bind(code).first()
-    if (!invitation || invitation.active!==1) return Response.json({ok:false,error:'Invalid invitation'},{status:404})
-    const settings=await db.prepare(`SELECT rsvp_change_deadline FROM wedding_settings WHERE id=1 LIMIT 1`).first()
-    if (!settings) return Response.json({ok:false,error:'RSVP settings unavailable'},{status:500})
-    if (new Date()>new Date(settings.rsvp_change_deadline)) return Response.json({ok:false,error:'RSVP deadline has passed'},{status:400})
-
-    const guestResult=await db.prepare(`SELECT id,invited_to_dinner,invited_to_evening FROM guests WHERE invitation_id=? ORDER BY id`).bind(invitation.id).all()
-    const guestsById=new Map(guestResult.results.map(g=>[g.id,g]))
-    const submittedIds=new Set()
-
-    for (const submitted of body.guests) {
-      const guestId=Number(submitted?.id)
-      if (!Number.isInteger(guestId)||submittedIds.has(guestId)) return Response.json({ok:false,error:'Invalid or duplicate guest'},{status:400})
-      submittedIds.add(guestId)
-      const guest=guestsById.get(guestId)
-      if (!guest) return Response.json({ok:false,error:'Invalid guest'},{status:400})
-      if (guest.invited_to_dinner===1 && (!submitted.dinner || !['attending','declined'].includes(submitted.dinner.status))) return Response.json({ok:false,error:'Dinner RSVP is required'},{status:400})
-      if (guest.invited_to_evening===1 && (!submitted.evening || !['attending','declined'].includes(submitted.evening.status))) return Response.json({ok:false,error:'Evening RSVP is required'},{status:400})
-      if (guest.invited_to_dinner!==1 && submitted.dinner!==undefined) return Response.json({ok:false,error:'Guest is not invited to dinner'},{status:400})
-      if (guest.invited_to_evening!==1 && submitted.evening!==undefined) return Response.json({ok:false,error:'Guest is not invited to evening'},{status:400})
-      const requirements=Array.isArray(submitted.dietaryRequirements)?submitted.dietaryRequirements:[]
-      const attending=(submitted.dinner?.status==='attending')||(submitted.evening?.status==='attending')
-      if (!attending && requirements.length) return Response.json({ok:false,error:'Dietary requirements require attendance'},{status:400})
-      const dietaryError=validateDietaryRequirements(requirements)
-      if (dietaryError) return Response.json({ok:false,error:dietaryError},{status:400})
-    }
-    if (submittedIds.size!==guestResult.results.length) return Response.json({ok:false,error:'All invited guests must be included'},{status:400})
-
-    const statements=[]
-    for (const submitted of body.guests) {
-      const guestId=Number(submitted.id), guest=guestsById.get(guestId)
-      if (guest.invited_to_dinner===1) {
-        statements.push(db.prepare(`UPDATE guests SET dinner_rsvp_status=?,updated_at=CURRENT_TIMESTAMP WHERE id=?`).bind(submitted.dinner.status,guestId))
-        statements.push(db.prepare(`INSERT INTO rsvp_responses (guest_id,status,event_part) VALUES (?,?,'dinner')`).bind(guestId,submitted.dinner.status))
-      }
-      if (guest.invited_to_evening===1) {
-        statements.push(db.prepare(`UPDATE guests SET evening_rsvp_status=?,updated_at=CURRENT_TIMESTAMP WHERE id=?`).bind(submitted.evening.status,guestId))
-        statements.push(db.prepare(`INSERT INTO rsvp_responses (guest_id,status,event_part) VALUES (?,?,'evening')`).bind(guestId,submitted.evening.status))
-      }
-      statements.push(db.prepare(`UPDATE guests SET email=?,updated_at=CURRENT_TIMESTAMP WHERE id=?`).bind(email||null,guestId))
-      statements.push(db.prepare(`DELETE FROM guest_dietary_requirements WHERE guest_id=?`).bind(guestId))
-      const attending=(submitted.dinner?.status==='attending')||(submitted.evening?.status==='attending')
-      if (attending) {
-        const storageEventPart=guest.invited_to_dinner===1?'dinner':'evening'
-        for (const requirement of submitted.dietaryRequirements||[]) {
-          statements.push(db.prepare(`INSERT INTO guest_dietary_requirements (guest_id,event_part,category,other_type,other_text) VALUES (?,?,? ,?,?)`).bind(guestId,storageEventPart,requirement.category,requirement.category==='other'?'allergy':null,requirement.category==='other'?requirement.otherText:null))
-        }
-      }
-    }
-    if (statements.length) await db.batch(statements)
+    const db = env.margo_glenn_wedding_db
+    const invitation = await db.prepare('SELECT id,active FROM invitations WHERE invitation_code=? LIMIT 1').bind(code).first()
+    if (!invitation || invitation.active !== 1) return Response.json({ok:false,error:'Invalid invitation'}, {status:404})
+    const { statements } = await prepareRsvpChanges(db, invitation.id, body)
+    await db.batch(statements)
     return Response.json({ok:true})
   } catch (error) {
-    console.error('RSVP submission failed:',error)
-    return Response.json({ok:false,error:'Unable to save RSVP'},{status:500})
+    const status = Number.isInteger(error.status) ? error.status : 500
+    if (status === 500) console.error('RSVP submission failed:', error)
+    return Response.json({ok:false,error:status === 500 ? 'Unable to save RSVP' : error.message}, {status})
   }
-}
-
-function validateDietaryRequirements(requirements) {
-  if (!Array.isArray(requirements)) return 'Invalid dietary requirements'
-  const allowed=new Set(['vegetarian','vegan','other']), seen=new Set()
-  for (const requirement of requirements) {
-    if (!requirement || typeof requirement!=='object') return 'Invalid dietary requirement'
-    const category=requirement.category
-    if (!allowed.has(category)) return 'Invalid dietary requirement category'
-    if (seen.has(category)) return 'Duplicate dietary requirement'
-    seen.add(category)
-    if (category==='other') {
-      if (typeof requirement.otherText!=='string'||!requirement.otherText.trim()||requirement.otherText.trim().length>250) return 'Other dietary requirement requires a description'
-    } else if (requirement.otherText!==undefined && requirement.otherText!==null) {
-      return 'Invalid dietary requirement'
-    }
-  }
-  return null
 }

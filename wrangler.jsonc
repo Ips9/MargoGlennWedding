@@ -4,12 +4,18 @@
   "main": "./worker/preview-wrapper.js",
   "compatibility_date": "2026-08-31",
 
+  "vars": {
+    "CF_ACCESS_TEAM_DOMAIN": "https://quiet-rice-9922.cloudflareaccess.com",
+    "CF_ACCESS_AUD": "111566afadc531b7accb095c25a863b4c1d19492323ddd1a71db8e93847fd8bc"
+  },
+
   "assets": {
     "directory": "./dist",
     "binding": "ASSETS",
     "not_found_handling": "single-page-application",
     "run_worker_first": [
       "/api/*",
+      "/admin",
       "/admin/*"
     ]
   },
