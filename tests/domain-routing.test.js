@@ -12,12 +12,9 @@ test('canonical domain enforces HTTPS and preserves path/query without external 
   assert.equal(domainRedirect(new Request('https://margoenglenn.com/api/guest/session'), env), null)
   assert.equal(domainRedirect(new Request('http://localhost:8788/'), env), null)
 })
-test('admin redirects only to the existing protected host while its API keeps working', () => {
+test('admin stays on the custom domain for direct Access protection', () => {
   for (const path of ['/admin','/admin/','/admin/api/dashboard']) {
-    const response = domainRedirect(new Request('https://margoenglenn.com' + path), env)
-    assert.equal(response.status, 307)
-    assert.equal(response.headers.get('location'), 'https://margo-glenn-wedding.margo-glenn-wedding.workers.dev' + path)
-    assert.equal(domainRedirect(new Request(response.headers.get('location')), env), null)
+    assert.equal(domainRedirect(new Request('https://margoenglenn.com' + path), env), null)
   }
   const redirect = domainRedirect(new Request('https://margo-glenn-wedding.margo-glenn-wedding.workers.dev/'), env)
   assert.equal(redirect.headers.get('location'), 'https://margoenglenn.com/')
