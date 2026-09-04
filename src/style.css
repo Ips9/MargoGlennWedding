@@ -498,6 +498,13 @@ button {
   margin-top: 22px;
 }
 
+.calendar-provider-icon {
+  display: block;
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+}
+
 .calendar-button,
 .calendar-icon-button {
   position: relative;
