@@ -1554,3 +1554,41 @@ footer .footer-small {
     padding: 60px 20px 75px;
   }
 }
+/* Private guest area, using the invitation's existing colours and type. */
+#rsvp [hidden], #guestPhotos[hidden], #guestPhotos [hidden] { display: none !important; }
+.guest-unframed { border: 0; margin: 0; padding: 0; min-width: 0; }
+.guest-session-bar { max-width: 680px; margin: 24px auto 0; display: flex; align-items: center; justify-content: space-between; gap: 16px; text-align: left; color: var(--olive-dark); font-size: .76rem; line-height: 1.7; }
+.guest-session-bar .text-link { flex: 0 0 auto; border: 0; background: none; font-family: inherit; cursor: pointer; padding: 8px 0; }
+#rsvp .button:disabled, #guestPhotos button:disabled, .guest-session-bar button:disabled { opacity: .55; cursor: default; }
+.invitation-code-label { display: block; }
+#invitationIntro { font-size: .82rem; line-height: 1.8; color: #676657; }
+#invitationHeading { overflow-wrap: anywhere; }
+.guest-form-block { margin-top: 32px; padding: 24px 20px; text-align: left; border-top: 1px solid rgba(79,84,48,.14); background: rgba(250,247,240,.35); }
+.guest-form-block h4, .guest-field-label { display: block; margin: 0 0 8px; color: var(--olive-dark); font-family: var(--serif); font-size: 1.25rem; font-weight: 600; }
+.guest-form-block p { margin: 0 0 14px; color: #777566; font-size: .76rem; line-height: 1.7; }
+.guest-field { display: block; box-sizing: border-box; width: 100%; min-width: 0; height: 48px; margin-top: 8px; padding: 0 14px; border: 1px solid rgba(79,84,48,.25); background: var(--white); color: var(--olive-dark); font-family: var(--sans); font-size: .82rem; font-weight: 400; }
+.guest-field:focus-visible, .dietary-other-text:focus-visible { outline: 2px solid var(--olive); outline-offset: 2px; }
+.guest-song-fields { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 14px; }
+.guest-form-block .guest-form-help { margin: 8px 0 0; font-size: .7rem; }
+.rsvp-submit-area { margin-top: 28px; }
+.dietary-other>label { display: block; margin-bottom: 8px; color: var(--olive-dark); font-size: .76rem; line-height: 1.6; }
+.guest-photos-section { background: var(--cream); }
+.guest-photos-intro { max-width: 630px; margin: 24px auto 0; color: #777566; font-size: .84rem; line-height: 1.9; }
+.guest-photo-card { width: min(1000px,100%); margin: 0 auto; padding: 36px; background: var(--white); border: 1px solid rgba(138,99,57,.18); box-shadow: 0 15px 40px rgba(54,58,32,.06); }
+.guest-photo-drop { padding: 34px 24px; border: 1px dashed rgba(79,84,48,.35); text-align: center; background: rgba(250,247,240,.5); transition: background .2s ease; }
+.guest-photo-drop.is-dragging { background: rgba(247,233,212,.85); border-color: var(--brown); }
+.guest-photo-drop.is-disabled { opacity: .6; }
+.guest-photo-drop>strong { display: block; font-family: var(--serif); font-weight: 600; font-size: 1.8rem; color: var(--olive-dark); }
+.guest-photo-drop>p { margin: 12px 0 20px; color: #777566; font-size: .76rem; line-height: 1.8; }
+.guest-photo-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 22px; }
+.guest-photo-actions .button { padding-inline: 20px; }
+.guest-photo-status { white-space: pre-line; color: var(--olive-dark); text-align: center; font-size: .8rem; line-height: 1.85; margin: 22px auto; max-width: 710px; }
+.guest-photo-empty { margin: 28px 0 8px; color: #777566; font-size: .8rem; line-height: 1.8; text-align: center; }
+.guest-photo-grid { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 12px; }
+.guest-photo-item { position: relative; aspect-ratio: 1; overflow: hidden; background: var(--cream); border: 1px solid rgba(79,84,48,.14); }
+.guest-photo-item.is-selected { border: 2px solid var(--olive); }
+.guest-photo-item>a { display: block; height: 100%; }
+.guest-photo-item img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.guest-photo-remove { position: absolute; right: 7px; top: 7px; width: 30px; height: 30px; border: 0; border-radius: 50%; background: var(--olive-dark); color: var(--white); cursor: pointer; font-size: 1.2rem; }
+.guest-photo-label { position: absolute; bottom: 0; left: 0; right: 0; padding: 7px; background: rgba(54,58,32,.84); color: var(--white); text-align: center; font-size: .65rem; }
+@media(max-width:700px) { .guest-photo-grid { grid-template-columns: repeat(2,minmax(0,1fr)); } .guest-photo-card { padding: 22px 16px; } .guest-song-fields { grid-template-columns: 1fr; } .guest-session-bar { font-size: .7rem; } .guest-form-block { padding: 22px 16px; } .guest-photo-drop { padding: 26px 16px; } }

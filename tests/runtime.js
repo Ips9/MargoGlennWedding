@@ -26,6 +26,7 @@ export async function createTestRuntime({ seedSettings = true, ...options } = {}
     cf: false,
     log: new Log(LogLevel.ERROR),
     ...options,
+    bindings: { ALLOW_TEST_INVITATIONS: 'true', ...options.bindings },
   }))
   try {
     const db = await runtime.getD1Database('margo_glenn_wedding_db')

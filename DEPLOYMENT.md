@@ -1,6 +1,21 @@
-# Wedding preview validation and deployment
+# Wedding guest portal: validation and deployment
 
-The preview loads `/wedding-preview-app.js` directly from its HTML. This works
+The main site opens a private guest area after a valid invitation code:
+
+1. RSVP for every invited guest and event, with one set of dietary preferences
+   and allergens per person and an optional email address.
+2. One optional song (title and artist) per invitation. Re-submission updates the
+   existing choice. D1 stores the invitation and the names of its guests so the
+   admin dashboard identifies the requesting household.
+3. A shared photo gallery for authenticated invitees. Uploads are attributed to
+   the invitation; both the list and image files require an active session.
+
+The code is exchanged for a short-lived HttpOnly cookie. The main site does not
+put invitation codes or session credentials into image URLs or browser storage.
+Guest writes require a matching CSRF token and same-origin request. Expired,
+logged-out or deactivated invitations cannot access the guest area.
+
+The separate preview loads `/wedding-preview-app.js` directly from its HTML. This works
 both at `/wedding-preview.html` and Cloudflare's canonical `/wedding-preview` URL;
 it does not depend on the Worker rewriting a static asset response.
 
@@ -19,15 +34,29 @@ Test-only RSVP dates are inserted by the test harness; production dates are not
 changed. The existing production configuration uses a remote D1 binding, so do
 not use plain `wrangler dev` for destructive test submissions.
 
+Validation on 4 September 2026: all 38 tests passed. The production frontend
+build and Worker deployment dry-run passed. A local browser check covered an
+invalid code, couple and solo invitations, RSVP with and without a song,
+allergen persistence after reload, a real multipart image upload, visibility
+from another invitation, session restore, logout and a 390px mobile layout.
+No browser console warnings or errors were observed. API integration tests
+also verified that direct image access fails without a session or after logout.
+
 ## Production prerequisites
 
-Read-only checks on 3 September 2026 found:
+Read-only checks on 4 September 2026 found:
 
 - R2 is not enabled on the Cloudflare account (`10042`). The account owner must
   complete R2 activation in the Cloudflare dashboard before the bucket can be
   created.
 - D1 migration `0006_guest_content.sql` is pending. It adds music suggestions,
   photo metadata and the shared photo quota.
+- The new `0007_guest_sessions.sql` adds guest sessions, login/upload counters
+  and the single-song-per-invitation table. Apply migrations from this branch.
+- The three publicly documented seed codes (`MG-TEST01`, `MG-TEST02`,
+  `MG-TEST03`) are still active in the database. The updated application rejects
+  them in production. `ALLOW_TEST_INVITATIONS=true` is for isolated local tests
+  only and must never be added to production Wrangler variables.
 - Production RSVP settings exist: initial deadline 1 May 2027 at 23:59:59 +02:00;
   changes until 1 June 2027 at 23:59:59 +02:00. The current API enforces the change
   deadline. A fresh database must have its settings configured separately.
@@ -43,9 +72,9 @@ npx wrangler d1 migrations apply margo-glenn-wedding-db --remote
 ```
 
 Then merge/deploy through the existing GitHub-to-Cloudflare build integration.
-Do not deploy the R2-bound Worker until its bucket exists. The code changes do
-not alter the main site's HTML, JavaScript or styling, but its shared backend is
-updated and should receive a regression check after deployment.
+Do not deploy the R2-bound Worker until its bucket exists. The main site's
+invitation area and shared backend are updated; its existing hero, wedding
+details, calendar and overall design are retained.
 
 ## Admin authentication
 
@@ -57,12 +86,17 @@ login redirects observed on the existing production `/admin` and
 
 ## Final live checks
 
-Use an explicit test invitation to confirm code lookup, RSVP save/reload and the
-authenticated admin dashboard. Check music sharing in a second browser and
-upload/reload a test image through the protected gallery. Live authenticated
-admin and R2 uploads remain unverified until activation and deployment.
+Create a temporary invitation with a newly generated code through the admin
+dashboard (not one of the public seed codes). Confirm login, RSVP save/reload,
+an omitted song, a saved/changed song and its attribution in admin. Upload a
+test photo and verify another authenticated invitation can see it. Verify the
+same image URL is inaccessible without a session and after logout. Verify
+deactivating the invitation revokes its sessions. Authenticated live admin and
+production R2 uploads remain unverified until activation and deployment.
 
 The 10 GB limit is an application storage limit. It is not an account-wide
-Cloudflare billing cap. Photos remain scoped to the invitation that uploaded
-them. Spotify links search for songs; the site does not automatically edit a
-Spotify account's playlist.
+Cloudflare billing cap. The main site's gallery is shared among authenticated
+invitees; legacy preview routes retain their invitation-scoped view. The
+preview's public music suggestions remain separate from the main site's one
+song per household. Spotify links search for songs; the site does not
+automatically edit a Spotify account's playlist.

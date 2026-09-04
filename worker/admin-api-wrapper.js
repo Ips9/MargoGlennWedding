@@ -1,29 +1,32 @@
 import legacyWorker from './index.js'
 import { getAccessIdentity } from './access.js'
+import { handleGuestApi } from './guest-api.js'
+import { LOGIN_LIMIT, limitedLoginResponse, loginKey, normalizeInvitationCode, refundRateLimit, reserveRateLimit } from './guest-security.js'
+import { PHOTO_QUOTA_BYTES, photoUploadAllowed, readPhotoForm, storeWeddingPhoto, validatePhoto } from './photo-storage.js'
 
 const CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
-const PHOTO_QUOTA_BYTES = 10_000_000_000
-const MAX_PHOTO_BYTES = 10 * 1024 * 1024
-const PHOTO_MIME_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp'])
 
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url)
 
-    if (url.pathname === '/api/invitation' && request.method === 'GET') {
-      return handlePublicInvitation(request, env)
+    if (url.pathname.startsWith('/api/guest/')) return handleGuestApi(request, env)
+
+    // Preview endpoints retain code-based access, with the same failed-code budget.
+    // Successful list, upload and image requests do not spend login attempts.
+    const guardedPaths = ['/api/invitation', '/api/rsvp', '/api/photos', '/api/photo']
+    if (guardedPaths.includes(url.pathname)) {
+      return guardLegacyInvitation(request, env, () => {
+        if (url.pathname === '/api/invitation' && request.method === 'GET') return handlePublicInvitation(request, env)
+        if (url.pathname === '/api/photos' && request.method === 'GET') return handlePublicPhotoList(request, env)
+        if (url.pathname === '/api/photos' && request.method === 'POST') return handlePublicPhotoUpload(request, env)
+        if (url.pathname === '/api/photo' && request.method === 'GET') return handlePublicPhoto(request, env)
+        return legacyWorker.fetch(request, env, ctx)
+      })
     }
 
     if (url.pathname === '/api/music/suggestions' && (request.method === 'GET' || request.method === 'POST')) {
       return request.method === 'GET' ? handlePublicMusicList(env) : handlePublicMusicCreate(request, env)
-    }
-
-    if (url.pathname === '/api/photos' && (request.method === 'GET' || request.method === 'POST')) {
-      return request.method === 'GET' ? handlePublicPhotoList(request, env) : handlePublicPhotoUpload(request, env)
-    }
-
-    if (url.pathname === '/api/photo' && request.method === 'GET') {
-      return handlePublicPhoto(request, env)
     }
 
     if (!url.pathname.startsWith('/admin/api/')) {
@@ -55,10 +58,26 @@ export default {
   }
 }
 
-async function handlePublicInvitation(request, env) {
-  const code = (new URL(request.url).searchParams.get('code') || '').trim().toUpperCase()
+async function guardLegacyInvitation(request, env, handler) {
+  try {
+    const db = env.margo_glenn_wedding_db, keyHash = await loginKey(request)
+    const windowStart = await reserveRateLimit(db, 'login', keyHash, LOGIN_LIMIT)
+    if (windowStart === null) return limitedLoginResponse()
+    const response = await handler()
+    // Reserve before checking credentials: even concurrent guesses are bounded.
+    // Successful reads/uploads refund the attempt and keep the preview usable.
+    if (response.status !== 404 && response.status !== 401) await refundRateLimit(db, 'login', keyHash, windowStart)
+    return response
+  } catch (error) {
+    console.error('Preview invitation request failed:', error)
+    return Response.json({ ok: false, error: 'Aanvraag kon niet worden verwerkt.' }, { status: 500, headers: { 'Cache-Control': 'private, no-store' } })
+  }
+}
 
-  if (!/^MG-[A-Z0-9]{6}$/.test(code)) {
+async function handlePublicInvitation(request, env) {
+  const code = normalizeInvitationCode(new URL(request.url).searchParams.get('code'), env)
+
+  if (!code) {
     return Response.json({ ok: false, error: 'Invalid invitation' }, { status: 404 })
   }
 
@@ -224,8 +243,8 @@ async function handlePublicMusicCreate(request, env) {
 }
 
 async function findInvitation(code, env) {
-  const normalized = String(code || '').trim().toUpperCase()
-  if (!/^MG-[A-Z0-9]{6}$/.test(normalized)) return null
+  const normalized = normalizeInvitationCode(code, env)
+  if (!normalized) return null
 
   return env.margo_glenn_wedding_db.prepare(`
     SELECT id, invitation_code
@@ -279,81 +298,28 @@ async function handlePublicPhotoList(request, env) {
 
 async function handlePublicPhotoUpload(request, env) {
   if (!env.WEDDING_PHOTOS) return Response.json({ ok: false, error: 'Fotodelen is nog niet geconfigureerd.' }, { status: 503 })
-
-  let form
   try {
-    form = await request.formData()
-  } catch {
-    return Response.json({ ok: false, error: 'Ongeldige upload.' }, { status: 400 })
-  }
-
-  const code = typeof form.get('code') === 'string' ? form.get('code') : ''
-  const invitation = await findInvitation(code, env)
-  if (!invitation) return Response.json({ ok: false, error: 'Deze fotosectie is niet beschikbaar voor deze code.' }, { status: 404 })
-
-  const file = form.get('photo')
-  if (!(file instanceof File)) return Response.json({ ok: false, error: 'Kies eerst een foto.' }, { status: 400 })
-  if (!PHOTO_MIME_TYPES.has(file.type)) return Response.json({ ok: false, error: 'Gebruik een JPG-, PNG- of WebP-foto.' }, { status: 400 })
-  if (file.size <= 0 || file.size > MAX_PHOTO_BYTES) return Response.json({ ok: false, error: 'Een foto mag maximaal 10 MB groot zijn.' }, { status: 400 })
-
-  const db = env.margo_glenn_wedding_db
-  let reserved = false
-  let key
-
-  try {
-    const reserve = await db.prepare(`
-      UPDATE wedding_photo_quota
-      SET used_bytes = used_bytes + ?
-      WHERE id = 1
-        AND used_bytes + ? <= ?
-    `).bind(file.size, file.size, PHOTO_QUOTA_BYTES).run()
-
-    if (reserve.meta.changes !== 1) {
-      return Response.json({
-        ok: false,
-        quotaReached: true,
-        error: 'De online fotoplaats is vol.'
-      }, { status: 507 })
+    const form = await readPhotoForm(request)
+    const code = typeof form.get('code') === 'string' ? form.get('code') : ''
+    const invitation = await findInvitation(code, env)
+    if (!invitation) return Response.json({ ok: false, error: 'Deze fotosectie is niet beschikbaar voor deze code.' }, { status: 404 })
+    if (!await photoUploadAllowed(env, invitation.id)) {
+      return Response.json({ ok: false, error: 'Je hebt al heel wat foto’s gedeeld. Probeer over een kwartier opnieuw.' }, {
+        status: 429, headers: { 'Retry-After': '900', 'Cache-Control': 'private, no-store' },
+      })
     }
-    reserved = true
-
-    const extension = file.type === 'image/jpeg' ? 'jpg' : file.type === 'image/png' ? 'png' : 'webp'
-    key = `photos/${invitation.id}/${crypto.randomUUID()}.${extension}`
-
-    await env.WEDDING_PHOTOS.put(key, file.stream(), {
-      httpMetadata: {
-        contentType: file.type,
-        cacheControl: 'private, no-store'
-      }
-    })
-
-    const inserted = await db.prepare(`
-      INSERT INTO wedding_photos (invitation_id, storage_key, original_filename, mime_type, size_bytes, approved)
-      VALUES (?, ?, ?, ?, ?, 1)
-    `).bind(invitation.id, key, String(file.name || '').slice(0, 255) || null, file.type, file.size).run()
-
-    return Response.json({
-      ok: true,
-      photo: {
-        id: inserted.meta.last_row_id,
-        filename: file.name,
-        sizeBytes: file.size,
-        url: `/api/photo?id=${encodeURIComponent(inserted.meta.last_row_id)}&code=${encodeURIComponent(String(code).trim().toUpperCase())}`
-      }
-    })
+    const file = form.get('photo')
+    await validatePhoto(file)
+    const photo = await storeWeddingPhoto(file, invitation, env)
+    return Response.json({ ok: true, photo: { ...photo,
+      url: '/api/photo?id=' + encodeURIComponent(photo.id) + '&code=' + encodeURIComponent(String(code).trim().toUpperCase())
+    } }, { headers: { 'Cache-Control': 'private, no-store' } })
   } catch (error) {
-    console.error('Photo upload failed:', error)
-    if (reserved) {
-      // Remove the object before releasing its quota, including uncertain puts.
-      // If cleanup fails, retain the reservation to avoid undercounting storage.
-      try {
-        if (key) await env.WEDDING_PHOTOS.delete(key)
-        await db.prepare(`UPDATE wedding_photo_quota SET used_bytes = MAX(0, used_bytes - ?) WHERE id = 1`).bind(file.size).run()
-      } catch (cleanupError) {
-        console.error('Photo cleanup failed; quota reservation retained:', cleanupError)
-      }
-    }
-    return Response.json({ ok: false, error: 'De foto kon niet worden opgeslagen. Probeer opnieuw.' }, { status: 500 })
+    const status = Number.isInteger(error.status) ? error.status : 500
+    if (status === 500) console.error('Photo upload failed:', error)
+    return Response.json({ ok: false, error: status === 500 ? 'De foto kon niet worden opgeslagen. Probeer opnieuw.' : error.message,
+      ...(error.quotaReached ? { quotaReached: true } : {})
+    }, { status, headers: { 'Cache-Control': 'private, no-store' } })
   }
 }
 
@@ -400,6 +366,8 @@ async function handleAdminDashboard(env, identity) {
     const guestResult = await db.prepare(`SELECT id, invitation_id, name, email, invited_to_dinner, invited_to_evening, rsvp_status, dinner_rsvp_status, evening_rsvp_status FROM guests ORDER BY invitation_id,id`).all()
     const dietaryResult = await db.prepare(`SELECT id,guest_id,event_part,category,other_type,other_text FROM guest_dietary_requirements ORDER BY guest_id,event_part,id`).all()
     const rsvpResult = await db.prepare(`SELECT id,guest_id,status,event_part,submitted_at AS created_at FROM rsvp_responses ORDER BY submitted_at DESC`).all()
+    const songResult = await db.prepare('SELECT invitation_id,title,artist,requested_by,updated_at FROM invitation_song_requests').all()
+    const photoCounts = await db.prepare('SELECT invitation_id,COUNT(*) AS photo_count FROM wedding_photos GROUP BY invitation_id').all()
 
     const invitations = invitationResult.results.map((invitation) => {
       const guests = guestResult.results
@@ -437,7 +405,12 @@ async function handleAdminDashboard(env, identity) {
         id: invitation.id,
         invitationCode: invitation.invitation_code,
         active: invitation.active === 1,
-        guests
+        guests,
+        song: (() => {
+          const song = songResult.results.find(row => row.invitation_id === invitation.id)
+          return song ? { title: song.title, artist: song.artist, requestedBy: song.requested_by, updatedAt: song.updated_at } : null
+        })(),
+        photoCount: Number(photoCounts.results.find(row => row.invitation_id === invitation.id)?.photo_count || 0)
       }
     })
 
