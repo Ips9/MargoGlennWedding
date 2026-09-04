@@ -1,0 +1,22 @@
+{
+  "name": "Margo & Glenn — Onze trouwdag",
+  "short_name": "Margo & Glenn",
+  "description": "De trouwwebsite van Margo & Glenn — 2 oktober 2027.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#faf7f0",
+  "theme_color": "#4f5430",
+  "icons": [
+    {
+      "src": "/android-chrome-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/android-chrome-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
