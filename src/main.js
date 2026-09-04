@@ -1,5 +1,6 @@
 import './style.css'
 import { guestPortalMarkup, initializeGuestPortal } from './guest-portal.js'
+import { initializeWeddingExtras } from './wedding-extras.js'
 
 const weddingDate = new Date('2027-10-02T00:00:00')
 const calendarEvent = { title:'Margo & Glenn — Onze trouwdag', location:'Hottentot Hoeve, Cassenbroek 1, 2820 Bonheiden', description:'Trouwdag van Margo & Glenn.', startDate:'20271002', endDate:'20271003', startDateTime:'2027-10-02T00:00:00', endDateTime:'2027-10-03T00:00:00' }
@@ -22,6 +23,7 @@ ${guestPortalMarkup}
 </main>`
 
 initializeGuestPortal()
+initializeWeddingExtras()
 document.querySelector('#calendarButton')?.addEventListener('click',createCalendarFile)
 document.querySelector('#calendarButton2')?.addEventListener('click',createCalendarFile)
 document.querySelector('#googleCalendarButton')?.addEventListener('click',openGoogleCalendar)

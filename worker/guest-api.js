@@ -2,6 +2,7 @@ import { prepareRsvpChanges } from './rsvp.js'
 import { HttpError, LOGIN_LIMIT, RATE_WINDOW_SECONDS, consumeRateLimit, limitedLoginResponse,
   loginKey, normalizeInvitationCode, randomToken, readLimitedJson, sha256, unixNow } from './guest-security.js'
 import { photoQuota, photoUploadAllowed, readPhotoForm, storeWeddingPhoto, validatePhoto } from './photo-storage.js'
+import { handleGuestExtrasApi } from './guest-extras.js'
 
 const COOKIE_NAME = 'wedding_guest_session'
 const SESSION_SECONDS = 12 * 60 * 60
@@ -183,6 +184,10 @@ export async function handleGuestApi(request, env) {
     if (!session) return json({ ok: false, error: 'Meld je aan met je uitnodigingscode.' }, 401,
       { 'Set-Cookie': cookie(request, '', 0) })
     if (!['GET', 'HEAD', 'OPTIONS'].includes(request.method)) checkCsrf(request, session)
+
+    const extrasResponse = await handleGuestExtrasApi(request, env, session)
+    if (extrasResponse) return extrasResponse
+
     if (path === '/api/guest/session' && request.method === 'GET') return json(await sessionData(env.margo_glenn_wedding_db, session.invitation_id, session.csrf_token))
     if (path === '/api/guest/session' && request.method === 'DELETE') {
       await env.margo_glenn_wedding_db.prepare('DELETE FROM guest_sessions WHERE session_hash=?').bind(session.session_hash).run()

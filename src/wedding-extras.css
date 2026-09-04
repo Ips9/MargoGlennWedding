@@ -1,0 +1,263 @@
+.wedding-mode-banner {
+  padding: 34px 24px;
+  background: var(--olive);
+  color: var(--cream-light);
+  text-align: center;
+}
+
+.wedding-mode-banner-inner {
+  width: min(860px, 100%);
+  margin: 0 auto;
+}
+
+.wedding-mode-banner .eyebrow {
+  color: var(--cream);
+}
+
+.wedding-mode-banner h2 {
+  margin: 4px 0 12px;
+  font-family: var(--serif);
+  font-size: clamp(2rem, 5vw, 3.4rem);
+  font-weight: 500;
+}
+
+.wedding-mode-banner p:not(.eyebrow) {
+  width: min(680px, 100%);
+  margin: 0 auto;
+  line-height: 1.8;
+  color: rgba(255, 253, 248, 0.88);
+}
+
+.wedding-mode-actions {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 22px;
+}
+
+.wedding-mode-banner .button-primary {
+  background: var(--cream-light);
+  color: var(--olive-dark);
+  border-color: var(--cream-light);
+}
+
+.wedding-mode-banner .button-secondary {
+  color: var(--cream-light);
+  border-color: rgba(255, 253, 248, 0.55);
+}
+
+.plus-one-block {
+  margin: 28px 0;
+  padding: 26px;
+  border: 1px solid rgba(79, 84, 48, 0.2);
+  background: rgba(255, 253, 248, 0.52);
+}
+
+.plus-one-block h4 {
+  margin: 0 0 8px;
+  color: var(--olive-dark);
+  font-family: var(--serif);
+  font-size: 1.6rem;
+  font-weight: 500;
+}
+
+.plus-one-block > p:not(.eyebrow) {
+  margin: 0 0 20px;
+  line-height: 1.7;
+  color: #646353;
+}
+
+.plus-one-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 14px;
+}
+
+.plus-one-remove {
+  color: #7d4b3f;
+}
+
+.guestbook-section {
+  background: var(--cream-light);
+}
+
+.guestbook-intro {
+  width: min(680px, 100%);
+  margin: 18px auto 0;
+  color: #646353;
+  line-height: 1.8;
+}
+
+.guestbook-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+  gap: 30px;
+  width: min(1080px, 100%);
+  margin: 42px auto 0;
+}
+
+.guestbook-write-card,
+.guestbook-entry {
+  border: 1px solid rgba(79, 84, 48, 0.18);
+  background: var(--white);
+  box-shadow: 0 10px 35px rgba(54, 58, 32, 0.06);
+}
+
+.guestbook-write-card {
+  position: sticky;
+  top: 24px;
+  align-self: start;
+  padding: 26px;
+}
+
+.guestbook-textarea {
+  width: 100%;
+  min-height: 150px;
+  resize: vertical;
+  margin-top: 8px;
+  padding: 14px 15px;
+  border: 1px solid rgba(79, 84, 48, 0.3);
+  background: var(--cream-light);
+  color: var(--ink);
+  font: inherit;
+  line-height: 1.6;
+}
+
+.guestbook-textarea:focus {
+  outline: 2px solid rgba(79, 84, 48, 0.16);
+  border-color: var(--olive);
+}
+
+.guestbook-write-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+  margin-top: 12px;
+}
+
+#guestbookCounter {
+  color: #777465;
+  font-size: 0.78rem;
+}
+
+.guestbook-entries {
+  display: grid;
+  gap: 16px;
+}
+
+.guestbook-entry {
+  padding: 24px 26px;
+}
+
+.guestbook-message {
+  margin: 0;
+  white-space: pre-wrap;
+  color: var(--ink);
+  font-family: var(--serif);
+  font-size: 1.2rem;
+  line-height: 1.65;
+}
+
+.guestbook-signature {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 14px;
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(138, 99, 57, 0.16);
+}
+
+.guestbook-signature strong {
+  color: var(--olive-dark);
+  font-size: 0.82rem;
+}
+
+.guestbook-signature span,
+.guestbook-empty {
+  color: #777465;
+  font-size: 0.76rem;
+}
+
+.guestbook-empty {
+  text-align: center;
+  padding: 34px 18px;
+}
+
+.cat-easter-egg {
+  position: fixed;
+  left: 50%;
+  bottom: 34px;
+  z-index: 10001;
+  transform: translateX(-50%);
+  width: min(420px, calc(100vw - 32px));
+  padding: 14px 18px;
+  border: 1px solid rgba(255,255,255,.35);
+  background: var(--olive-dark);
+  color: var(--cream-light);
+  text-align: center;
+  box-shadow: 0 14px 45px rgba(0,0,0,.24);
+  animation: easter-toast 4.2s ease both;
+}
+
+.easter-paw {
+  --paw-index: 0;
+  position: fixed;
+  z-index: 10000;
+  left: calc(5vw + (var(--paw-index) * 11vw));
+  bottom: calc(4vh + (var(--paw-index) * 5px));
+  font-size: clamp(1.25rem, 4vw, 2.2rem);
+  pointer-events: none;
+  opacity: 0;
+  transform: rotate(calc(-25deg + (var(--paw-index) * 8deg)));
+  animation: paw-walk 3.6s ease calc(var(--paw-index) * 0.14s) both;
+}
+
+.footer .heart {
+  user-select: none;
+}
+
+@keyframes paw-walk {
+  0% { opacity: 0; transform: translateY(40px) scale(.7) rotate(calc(-25deg + (var(--paw-index) * 8deg))); }
+  22% { opacity: .95; }
+  72% { opacity: .95; }
+  100% { opacity: 0; transform: translateY(-110px) scale(1) rotate(calc(-5deg + (var(--paw-index) * 8deg))); }
+}
+
+@keyframes easter-toast {
+  0%, 100% { opacity: 0; transform: translate(-50%, 16px); }
+  12%, 82% { opacity: 1; transform: translate(-50%, 0); }
+}
+
+.wedding-mode-live #rsvpForm,
+.wedding-mode-after #rsvpForm {
+  display: none;
+}
+
+@media (max-width: 760px) {
+  .guestbook-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .guestbook-write-card {
+    position: static;
+  }
+
+  .guestbook-write-footer,
+  .guestbook-signature {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .guestbook-write-footer .button {
+    width: 100%;
+  }
+
+  .plus-one-block {
+    padding: 22px 18px;
+  }
+}
