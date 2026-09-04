@@ -9,9 +9,9 @@ Cloudflare provisions the custom-domain DNS and HTTPS certificates.
 
 The Worker redirects www and HTTP to `https://margoenglenn.com`, preserving
 paths and query strings. The original workers.dev homepage also redirects there.
-`/admin` and `/admin/*` on either custom hostname redirect to the original
-workers.dev host, where the existing Cloudflare Access login remains in force.
-Keep `workers_dev: true` for that protected admin origin and legacy preview URLs.
+`/admin` and `/admin/*` stay on the custom hostname and require a dedicated
+Cloudflare Access self-hosted application for `margoenglenn.com/admin`.
+Keep `workers_dev: true` for legacy preview URLs.
 `run_worker_first: true` ensures static assets cannot skip these domain rules.
 Guest sessions are host-specific: existing guests enter their same invitation
 code once on the new domain. Their saved RSVP, song and photos remain available.
