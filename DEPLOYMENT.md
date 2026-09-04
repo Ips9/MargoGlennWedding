@@ -1,5 +1,25 @@
 # Wedding guest portal: validation and deployment
 
+## Custom domain
+
+The production configuration attaches `margoenglenn.com` and
+`www.margoenglenn.com` to the existing `margo-glenn-wedding` Worker. Both use
+the existing D1 database and private R2 bucket; no records or images are copied.
+Cloudflare provisions the custom-domain DNS and HTTPS certificates.
+
+The Worker redirects www and HTTP to `https://margoenglenn.com`, preserving
+paths and query strings. The original workers.dev homepage also redirects there.
+`/admin` and `/admin/*` on either custom hostname redirect to the original
+workers.dev host, where the existing Cloudflare Access login remains in force.
+Keep `workers_dev: true` for that protected admin origin and legacy preview URLs.
+`run_worker_first: true` ensures static assets cannot skip these domain rules.
+Guest sessions are host-specific: existing guests enter their same invitation
+code once on the new domain. Their saved RSVP, song and photos remain available.
+
+Validation for the domain change: all 40 tests, frontend build and Worker
+deployment dry-run passed. This includes canonical URL and protected-admin
+redirect checks as well as the previous session/RSVP/photo integration suite.
+
 The main site opens a private guest area after a valid invitation code:
 
 1. RSVP for every invited guest and event, with one set of dietary preferences
