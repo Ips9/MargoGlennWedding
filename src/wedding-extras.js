@@ -92,7 +92,7 @@ function applyWeddingMode(mode) {
   if (mode === 'after') {
     if (eyebrow) eyebrow.textContent = 'Dankjewel'
     if (title) title.innerHTML = 'Wat een dag.<br/><em>Wat een feest.</em>'
-    if (intro) intro.textContent = 'Bedankt om onze trouwdag samen met ons onvergetelijk te maken. We genieten graag nog even verder van alle foto's en lieve woorden.'
+    if (intro) intro.textContent = "Bedankt om onze trouwdag samen met ons onvergetelijk te maken. We genieten graag nog even verder van alle foto's en lieve woorden."
     if (primaryHeroAction) { primaryHeroAction.textContent = "Foto's & gastenboek"; primaryHeroAction.href = '#rsvp' }
     if (countdownSection) countdownSection.hidden = true
     if (rsvpEyebrow) rsvpEyebrow.textContent = 'Gastenhoek'
