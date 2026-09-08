@@ -16,7 +16,9 @@ export default {
 
 async function handleAdminPage(request, env, ctx) {
   if (!await getAccessIdentity(request, env, ctx)) return new Response('Unauthorized',{status:401})
-  return env.ASSETS.fetch(new Request(new URL('/admin.html',request.url),request))
+  // Static Assets maps /admin to admin.html. Requesting /admin.html here causes
+  // auto-trailing-slash HTML handling to redirect back to /admin (307), creating a loop.
+  return env.ASSETS.fetch(new Request(new URL('/admin',request.url),request))
 }
 
 async function handleAdminApi(request, env, ctx) {
