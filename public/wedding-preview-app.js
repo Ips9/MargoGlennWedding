@@ -353,7 +353,7 @@
       const other = requirements.find(item => item.category === 'other')
       return `<article class="preview-guest" data-guest-id="${guest.id}">
         <h4>${escapeHtml(guest.name)}</h4>
-        ${guest.invitedToDinner ? renderEvent(guest, 'dinner', 'Diner') : ''}
+        ${guest.invitedToDinner ? renderEvent(guest, 'dinner', 'Receptie & Diner') : ''}
         ${guest.invitedToEvening ? renderEvent(guest, 'evening', 'Avondfeest') : ''}
         <fieldset class="preview-diet" data-dietary hidden disabled>
           <legend>Allergieën &amp; dieetvoorkeuren</legend>

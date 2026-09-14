@@ -109,7 +109,7 @@ function eventQuestion(session, multiple) {
     ? 'Laat ons hieronder weten voor welke onderdelen jullie aanwezig zullen zijn.'
     : 'Laat ons hieronder weten voor welke onderdelen je aanwezig zult zijn.'
   if (evening) return `${multiple ? 'Kunnen jullie' : 'Kan je'} erbij zijn op ons avondfeest?`
-  return `${multiple ? 'Kunnen jullie' : 'Kan je'} erbij zijn op ons diner?`
+  return `${multiple ? 'Kunnen jullie' : 'Kan je'} erbij zijn op onze receptie en het diner?`
 }
 
 function renderPersonalWelcome(session, plusOne, mode) {
@@ -139,8 +139,8 @@ function renderPersonalWelcome(session, plusOne, mode) {
 }
 
 function scopeText(plusOne) {
-  if (plusOne.invitedToDinner && plusOne.invitedToEvening) return 'het diner én het avondfeest'
-  if (plusOne.invitedToDinner) return 'het diner'
+  if (plusOne.invitedToDinner && plusOne.invitedToEvening) return 'de receptie, het diner en het avondfeest'
+  if (plusOne.invitedToDinner) return 'de receptie en het diner'
   return 'het avondfeest'
 }
 
