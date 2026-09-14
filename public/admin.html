@@ -16,7 +16,7 @@
 <div class="card"><div class="card-label">Uitnodigingen</div><div class="card-value" id="statInvitations">—</div></div>
 <div class="card"><div class="card-label">Actieve uitnodigingen</div><div class="card-value" id="statActiveInvitations">—</div></div>
 <div class="card"><div class="card-label">Gasten</div><div class="card-value" id="statGuests">—</div></div>
-<div class="card"><div class="card-label">Diner aanwezig</div><div class="card-value" id="statDinnerAttending">—</div></div>
+<div class="card"><div class="card-label">Receptie &amp; Diner aanwezig</div><div class="card-value" id="statDinnerAttending">—</div></div>
 <div class="card"><div class="card-label">Avond aanwezig</div><div class="card-value" id="statEveningAttending">—</div></div>
 <div class="card"><div class="card-label">Liedjes aangevraagd</div><div class="card-value" id="statSongs">—</div></div>
 <div class="card"><div class="card-label">Foto's gedeeld</div><div class="card-value" id="statPhotos">—</div></div>
@@ -25,7 +25,7 @@
 <section class="section">
 <div class="section-header"><h2>Nieuwe uitnodiging</h2></div>
 <div class="section-body">
-<p class="helper">Maak hier een nieuwe uitnodiging aan. Kies 1 of 2 gasten en bepaal per gast of die persoon voor het diner, het avondfeest of beide is uitgenodigd.</p>
+<p class="helper">Maak hier een nieuwe uitnodiging aan. Kies 1 of 2 gasten en bepaal per gast of die persoon voor de receptie en het diner, het avondfeest of beide is uitgenodigd.</p>
 <form id="createInvitationForm">
 <div class="field-label">Aantal gasten</div>
 <div class="guest-count"><label class="guest-count-option"><input type="radio" name="guestCount" value="1" checked> 1 gast</label><label class="guest-count-option"><input type="radio" name="guestCount" value="2"> 2 gasten</label></div>
@@ -51,7 +51,7 @@ function renderGuestEditors(){
  const count=getGuestCount();
  guestEditors.innerHTML='';
  for(let index=1;index<=count;index++){
-  guestEditors.insertAdjacentHTML('beforeend',`<div class="guest-editor"><h3>Gast ${index}</h3><label class="field-label" for="guestName${index}">Naam</label><input class="name-input" id="guestName${index}" type="text" maxlength="150" placeholder="Voornaam en familienaam" autocomplete="off"><span class="field-label" style="margin-top:14px">Uitgenodigd voor</span><div class="scope-grid"><label class="scope-option"><input type="radio" name="guestScope${index}" value="both" checked> Diner + avondfeest</label><label class="scope-option"><input type="radio" name="guestScope${index}" value="dinner"> Alleen diner</label><label class="scope-option"><input type="radio" name="guestScope${index}" value="evening"> Alleen avondfeest</label></div></div>`);
+  guestEditors.insertAdjacentHTML('beforeend',`<div class="guest-editor"><h3>Gast ${index}</h3><label class="field-label" for="guestName${index}">Naam</label><input class="name-input" id="guestName${index}" type="text" maxlength="150" placeholder="Voornaam en familienaam" autocomplete="off"><span class="field-label" style="margin-top:14px">Uitgenodigd voor</span><div class="scope-grid"><label class="scope-option"><input type="radio" name="guestScope${index}" value="both" checked> Receptie &amp; Diner + avondfeest</label><label class="scope-option"><input type="radio" name="guestScope${index}" value="dinner"> Alleen Receptie &amp; Diner</label><label class="scope-option"><input type="radio" name="guestScope${index}" value="evening"> Alleen avondfeest</label></div></div>`);
  }
 }
 renderGuestEditors();
@@ -123,7 +123,7 @@ function renderGuestContributions(invitation){
 }
 function renderGuest(guest){
  const statuses=[];
- if(guest.invitedToDinner)statuses.push(`<span class="status ${statusClass(guest.dinnerRsvpStatus)}">Diner: ${statusText(guest.dinnerRsvpStatus)}</span>`);
+ if(guest.invitedToDinner)statuses.push(`<span class="status ${statusClass(guest.dinnerRsvpStatus)}">Receptie &amp; Diner: ${statusText(guest.dinnerRsvpStatus)}</span>`);
  if(guest.invitedToEvening)statuses.push(`<span class="status ${statusClass(guest.eveningRsvpStatus)}">Avond: ${statusText(guest.eveningRsvpStatus)}</span>`);
  const dietary=renderDietary(guest.dietaryRequirements);
  const history=Array.isArray(guest.rsvpHistory)&&guest.rsvpHistory.length?`<details class="history"><summary>${guest.rsvpHistory.length} RSVP ${guest.rsvpHistory.length===1?'antwoord':'antwoorden'} in historiek</summary>${guest.rsvpHistory.map(r=>`<div class="history-row">${escapeHtml(r.eventPart)} · ${escapeHtml(statusText(r.status))} · ${escapeHtml(r.createdAt||'')}</div>`).join('')}</details>`:'';
