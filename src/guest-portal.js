@@ -29,6 +29,11 @@ export const guestPortalMarkup = `
     <div id="guestSessionBar" class="guest-session-bar" hidden><span id="guestSessionNames"></span><button id="guestLogout" class="text-link" type="button">Uitloggen</button></div>
     <div id="rsvp-form-container" hidden>
       <div class="rsvp-invitation-heading"><p class="eyebrow">Welkom</p><h3 id="invitationHeading"></h3><p id="invitationIntro"></p></div>
+      <aside id="guestGiftTip" class="guest-gift-tip" aria-labelledby="guestGiftHeading" hidden>
+        <p class="eyebrow">Een kleine tip</p><h4 id="guestGiftHeading">Cadeautip</h4>
+        <p>Jullie aanwezigheid is voor ons het mooiste cadeau. Wil je ons daarnaast graag iets schenken? Een bijdrage voor ons volgende avontuur is heel welkom op dit rekeningnummer:</p>
+        <strong id="guestGiftIban" class="guest-gift-iban"></strong>
+      </aside>
       <form id="rsvpForm">
         <fieldset id="guestRsvpFields" class="guest-unframed">
           <div id="guestList"></div>
@@ -182,6 +187,8 @@ export function initializeGuestPortal() {
     $('#guestSongAttribution').textContent = ''
     $('#guestSongIntro').textContent = ''
     $('#guestSessionNames').textContent = ''
+    $('#guestGiftIban').textContent = ''
+    $('#guestGiftTip').hidden = true
     photoGrid.innerHTML = ''
     photoStatus.textContent = ''
     $('#guestSessionBar').hidden = true
@@ -263,6 +270,9 @@ export function initializeGuestPortal() {
     $('#guestSongIntro').textContent = `Welk nummer mag niet ontbreken? Geef hieronder één liedje door voor ${multiple ? 'jullie' : 'je'} uitnodiging. Dit is helemaal optioneel.`
     $('#guestSongAttribution').textContent = `${multiple ? 'Jullie' : 'Je'} liedje wordt gekoppeld aan ${multiple ? 'de namen' : 'de naam'} op deze uitnodiging: ${names}.`
     $('#guestSessionNames').textContent = `Uitnodiging voor ${names}`
+    const giftIban = typeof data.giftIban === 'string' ? data.giftIban.trim() : ''
+    $('#guestGiftIban').textContent = giftIban
+    $('#guestGiftTip').hidden = !giftIban
     updateSongValidity()
     $('#invitationCard').hidden = true
     $('#invitationError').hidden = true

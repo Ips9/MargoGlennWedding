@@ -54,7 +54,8 @@ function checkCsrf(request, session) {
   if (!supplied || supplied !== session.csrf_token) throw new HttpError('Je sessie kon niet worden bevestigd. Vernieuw de pagina.', 403)
 }
 
-async function sessionData(db, invitationId, csrfToken) {
+async function sessionData(env, invitationId, csrfToken) {
+  const db = env.margo_glenn_wedding_db
   const [guestResult, dietaryResult, song] = await Promise.all([
     db.prepare(`SELECT id,name,email,invited_to_dinner,invited_to_evening,rsvp_status,dinner_rsvp_status,evening_rsvp_status
       FROM guests WHERE invitation_id=? ORDER BY id`).bind(invitationId).all(),
@@ -75,7 +76,7 @@ async function sessionData(db, invitationId, csrfToken) {
   })
   return { ok: true, guests, email: guestResult.results.find(guest => guest.email)?.email || '',
     song: song ? { title: song.title, artist: song.artist, requestedBy: song.requested_by, updatedAt: song.updated_at } : null,
-    csrfToken }
+    giftIban: typeof env.GIFT_IBAN === 'string' ? env.GIFT_IBAN.trim() : '', csrfToken }
 }
 
 async function login(request, env) {
@@ -101,7 +102,7 @@ async function login(request, env) {
     SELECT ?,id,?,?,? FROM invitations WHERE id=? AND active=1`).bind(hash, csrfToken, now + SESSION_SECONDS, now, invitation.id))
   const results = await db.batch(statements)
   if (results.at(-1).meta.changes !== 1) return invalid()
-  const data = await sessionData(db, invitation.id, csrfToken)
+  const data = await sessionData(env, invitation.id, csrfToken)
   return json(data, 200, { 'Set-Cookie': cookie(request, rawToken) })
 }
 
@@ -126,7 +127,7 @@ async function saveRsvp(request, env, session) {
   }
   // D1 rolls the complete batch back if any song or RSVP statement fails.
   await db.batch(statements)
-  return json(await sessionData(db, session.invitation_id, session.csrf_token))
+  return json(await sessionData(env, session.invitation_id, session.csrf_token))
 }
 
 async function listPhotos(env) {
@@ -188,7 +189,7 @@ export async function handleGuestApi(request, env) {
     const extrasResponse = await handleGuestExtrasApi(request, env, session)
     if (extrasResponse) return extrasResponse
 
-    if (path === '/api/guest/session' && request.method === 'GET') return json(await sessionData(env.margo_glenn_wedding_db, session.invitation_id, session.csrf_token))
+    if (path === '/api/guest/session' && request.method === 'GET') return json(await sessionData(env, session.invitation_id, session.csrf_token))
     if (path === '/api/guest/session' && request.method === 'DELETE') {
       await env.margo_glenn_wedding_db.prepare('DELETE FROM guest_sessions WHERE session_hash=?').bind(session.session_hash).run()
       return json({ ok: true }, 200, { 'Set-Cookie': cookie(request, '', 0) })
