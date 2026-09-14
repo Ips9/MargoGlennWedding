@@ -6,11 +6,12 @@ import { createTestRuntime } from './runtime.js'
 
 const ORIGIN = 'https://wedding.test'
 const COOKIE_NAME = 'wedding_guest_session'
+const TEST_GIFT_IBAN = 'BE00 0000 0000 0000'
 const QUOTA_BYTES = 10_000_000_000
 const PHOTO = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Wl6x1sAAAAASUVORK5CYII=', 'base64')
 let runtime, db, bucket, nextIp = 1
 
-before(async () => { ({ runtime, db, bucket } = await createTestRuntime()) })
+before(async () => { ({ runtime, db, bucket } = await createTestRuntime({ bindings: { GIFT_IBAN: TEST_GIFT_IBAN } })) })
 after(async () => { await runtime?.dispose() })
 
 async function raw(path, { session, body, method, csrf = true, origin = ORIGIN, headers = {} } = {}) {
@@ -81,6 +82,26 @@ test('guest data and mutations require a real cookie; URL codes and fabricated s
   assert.ok([401, 404].includes(invalid.response.status))
   assert.equal(invalid.data.guests, undefined)
   assert.equal(invalid.response.headers.get('set-cookie'), null)
+  assert.ok(!JSON.stringify(invalid.data).includes(TEST_GIFT_IBAN))
+})
+
+test('gift tip is returned only after a valid invitation code and while its session is active', async () => {
+  const anonymous = await api('/api/guest/session')
+  assert.equal(anonymous.response.status, 401)
+  assert.ok(!JSON.stringify(anonymous.data).includes(TEST_GIFT_IBAN))
+
+  const session = await login('MG-TEST02')
+  assert.equal(session.giftIban, TEST_GIFT_IBAN)
+  assert.match(session.setCookie, /HttpOnly/i)
+  const restored = await api('/api/guest/session', { session })
+  assert.equal(restored.data.giftIban, TEST_GIFT_IBAN)
+  assert.match(restored.response.headers.get('cache-control'), /no-store/)
+
+  const logout = await api('/api/guest/session', { session, method: 'DELETE' })
+  assert.equal(logout.response.status, 200)
+  const afterLogout = await api('/api/guest/session', { session })
+  assert.equal(afterLogout.response.status, 401)
+  assert.ok(!JSON.stringify(afterLogout.data).includes(TEST_GIFT_IBAN))
 })
 
 test('published test invitation codes are rejected unless the local-only opt-in is enabled', async () => {

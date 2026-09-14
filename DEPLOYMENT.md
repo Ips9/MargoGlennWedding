@@ -29,6 +29,9 @@ The main site opens a private guest area after a valid invitation code:
    admin dashboard identifies the requesting household.
 3. A shared photo gallery for authenticated invitees. Uploads are attributed to
    the invitation; both the list and image files require an active session.
+4. A gift tip with the bank account, returned only in the authenticated guest
+   session response. Configure `GIFT_IBAN` as a Cloudflare Worker secret; never
+   put the account number in `wrangler.jsonc`, frontend files, or public assets.
 
 The code is exchanged for a short-lived HttpOnly cookie. The main site does not
 put invitation codes or session credentials into image URLs or browser storage.
