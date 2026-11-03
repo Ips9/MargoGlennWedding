@@ -38,7 +38,7 @@ export const guestPortalMarkup = `
             <input class="guest-field" id="rsvpEmail" name="rsvpEmail" type="email" autocomplete="email" maxlength="254" placeholder="jouw@email.be">
           </div>
           <div class="rsvp-submit-area rsvp-primary-submit">
-            <p>Alles ingevuld? Bevestig hier je aanwezigheid. Een liedje kiezen is niet verplicht.</p>
+            <p>Alles ingevuld? Bevestig hier je aanwezigheid.</p>
             <button id="confirmRsvpButton" type="submit" class="button button-primary" data-submit-action="rsvp">RSVP bevestigen</button>
           </div>
           <aside id="guestGiftTip" class="guest-gift-tip" aria-labelledby="guestGiftHeading" hidden>
