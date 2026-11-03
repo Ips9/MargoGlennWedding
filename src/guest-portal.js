@@ -9,7 +9,7 @@ const countPhotos = count => `${count} foto${count === 1 ? '' : "'s"}`
 
 export const guestPortalMarkup = `
 <section id="rsvp" class="section rsvp-section">
-  <div class="section-heading"><p class="eyebrow">RSVP</p><h2>Laat ons weten of je erbij bent</h2><div class="small-line"></div></div>
+  <div class="section-heading"><p class="eyebrow">RSVP</p><h2>Laat ons weten of je erbij bent</h2><div class="small-line"></div><p class="rsvp-deadline">Gelieve uiterlijk op 30 juni 2027 te antwoorden.</p></div>
   <div class="rsvp-content"><div id="rsvp-app">
     <div class="invitation-card" id="invitationCard"><div class="invitation-card-inner">
       <div class="invitation-card-decoration">♡</div><p class="eyebrow">Onze persoonlijke uitnodiging</p><h3>Voor jullie</h3>
@@ -42,6 +42,10 @@ export const guestPortalMarkup = `
             <p>Laat hier je e-mailadres achter als je na ons feest graag nog enkele foto's wilt ontvangen die we met jullie willen delen. <strong>Dit e-mailadres gaat uitsluitend naar Margo &amp; Glenn en wordt met niemand anders gedeeld.</strong></p>
             <input class="guest-field" id="rsvpEmail" name="rsvpEmail" type="email" autocomplete="email" maxlength="254" placeholder="jouw@email.be">
           </div>
+          <div class="rsvp-submit-area rsvp-primary-submit">
+            <p>Alles ingevuld? Bevestig hier je aanwezigheid. Een liedje kiezen is niet verplicht.</p>
+            <button id="confirmRsvpButton" type="submit" class="button button-primary" data-submit-action="rsvp">RSVP bevestigen</button>
+          </div>
           <div class="rsvp-song-block guest-form-block">
             <h4>Een nummer voor de dansvloer</h4>
             <p id="guestSongIntro"></p>
@@ -50,11 +54,11 @@ export const guestPortalMarkup = `
               <label class="guest-field-label" for="guestSongTitle">Titel<input class="guest-field" id="guestSongTitle" name="songTitle" maxlength="120" placeholder="Titel van het nummer"></label>
               <label class="guest-field-label" for="guestSongArtist">Artiest<input class="guest-field" id="guestSongArtist" name="songArtist" maxlength="120" placeholder="Naam van de artiest"></label>
             </div>
-            <p class="guest-form-help">Je kunt je keuze later aanpassen. Maak beide velden leeg om je liedje te verwijderen.</p>
+            <p class="guest-form-help">Dit is optioneel. Vul een titel en artiest in en bevestig daarna je RSVP met liedje. Een eerder gekozen liedje kun je hier later aanpassen.</p>
+            <div class="rsvp-submit-area rsvp-song-submit"><button id="confirmRsvpWithSongButton" type="submit" class="button button-secondary" data-submit-action="rsvp-song">RSVP bevestigen met liedje</button></div>
           </div>
         </fieldset>
         <div id="rsvpSaveStatus" class="rsvp-message" role="status" hidden></div>
-        <div class="rsvp-submit-area"><button type="submit" class="button button-primary">Bewaar RSVP en liedje</button></div>
       </form>
     </div>
   </div></div>
@@ -75,7 +79,9 @@ export function initializeGuestPortal() {
   if (!invitationForm) return
   const rsvpForm = $('#rsvpForm')
   const loginButton = $('button[type="submit"]', invitationForm)
-  const saveButton = $('button[type="submit"]', rsvpForm)
+  const rsvpButton = $('#confirmRsvpButton')
+  const songButton = $('#confirmRsvpWithSongButton')
+  const saveButtons = [rsvpButton, songButton]
   const photoStatus = $('#guestPhotoStatus')
   const photoGrid = $('#guestPhotoGrid')
   const controllers = new Set()
@@ -97,7 +103,7 @@ export function initializeGuestPortal() {
     $('#invitationCode').disabled = busy
     $('#guestLogout').disabled = busy || !session
     $('#guestRsvpFields').disabled = busy || !session
-    saveButton.disabled = busy || !session
+    saveButtons.forEach(button => { button.disabled = busy || !session })
     const uploadsDisabled = busy || !session || quotaBlocked || !quota.uploadAvailable
     $('#guestPhotoInput').disabled = uploadsDisabled
     $('#guestPhotoChoose').disabled = uploadsDisabled
@@ -201,7 +207,8 @@ export function initializeGuestPortal() {
     $('#invitationError').textContent = message
     $('#invitationError').hidden = !message
     loginButton.textContent = 'Open uitnodiging'
-    saveButton.textContent = 'Bewaar RSVP en liedje'
+    rsvpButton.textContent = 'RSVP bevestigen'
+    songButton.textContent = 'RSVP bevestigen met liedje'
     $('#guestLogout').textContent = 'Uitloggen'
     if (message) showLoginPanel()
     else { $('#invitation-code-panel').hidden = true; $('#openInvitationButton').hidden = false }
@@ -239,14 +246,15 @@ export function initializeGuestPortal() {
     text.setCustomValidity(attending && otherChecked && !text.value.trim() ? 'Vul je allergie of dieetvoorkeur in.' : '')
   }
 
-  function updateSongValidity() {
+  function updateSongValidity(requireSong = null) {
     const title = $('#guestSongTitle')
     const artist = $('#guestSongArtist')
     const hasSong = Boolean(title.value.trim() || artist.value.trim())
-    title.required = hasSong
-    artist.required = hasSong
-    title.setCustomValidity(hasSong && !title.value.trim() ? 'Vul ook de titel van het nummer in.' : '')
-    artist.setCustomValidity(hasSong && !artist.value.trim() ? 'Vul ook de artiest van het nummer in.' : '')
+    const requireBoth = requireSong === true || (requireSong === null && hasSong)
+    title.required = requireBoth
+    artist.required = requireBoth
+    title.setCustomValidity(requireBoth && !title.value.trim() ? 'Vul ook de titel van het nummer in.' : '')
+    artist.setCustomValidity(requireBoth && !artist.value.trim() ? 'Vul ook de artiest van het nummer in.' : '')
   }
 
   function applySession(data) {
@@ -394,7 +402,8 @@ export function initializeGuestPortal() {
   rsvpForm.addEventListener('submit', async event => {
     event.preventDefault()
     if (!session || operation) return
-    updateSongValidity()
+    const includeSong = event.submitter?.dataset.submitAction === 'rsvp-song'
+    updateSongValidity(includeSong)
     if (!rsvpForm.reportValidity()) return
     const guests = $$('.rsvp-guest', rsvpForm).map(element => {
       const id = Number(element.dataset.guestId)
@@ -412,27 +421,35 @@ export function initializeGuestPortal() {
     })
     const title = $('#guestSongTitle').value.trim()
     const artist = $('#guestSongArtist').value.trim()
-    const body = { email: $('#rsvpEmail').value.trim(), guests, song: title && artist ? { title, artist } : null }
+    const body = { email: $('#rsvpEmail').value.trim(), guests }
+    if (includeSong) body.song = { title, artist }
     const ticket = beginOperation('rsvp')
     if (!ticket) return
     const message = $('#rsvpSaveStatus')
     message.hidden = true
-    saveButton.textContent = 'Opslaan…'
+    const activeButton = includeSong ? songButton : rsvpButton
+    activeButton.textContent = 'Bevestigen…'
     try {
       await request('/api/guest/rsvp', { method: 'POST', headers: mutationHeaders(), body: JSON.stringify(body) })
       if (!isCurrent(ticket)) return
       const multiple = guests.length > 1
       const attending = guests.some(guest => guest.dinner?.status === 'attending' || guest.evening?.status === 'attending')
       message.className = 'rsvp-message rsvp-success'
-      message.textContent = `${multiple ? 'Jullie antwoord is' : 'Je antwoord is'} opgeslagen. ${body.song ? `Ook ${multiple ? 'jullie' : 'je'} liedje staat op de lijst. ` : ''}${attending ? 'We kijken ernaar uit om samen onze dag te vieren.' : 'Bedankt om het ons te laten weten.'} ♡`
+      message.textContent = `${multiple ? 'Jullie RSVP is' : 'Je RSVP is'} bevestigd. ${includeSong ? `Ook ${multiple ? 'jullie' : 'je'} liedje staat op de lijst. ` : ''}${attending ? 'We kijken ernaar uit om samen onze dag te vieren.' : 'Bedankt om het ons te laten weten.'} ♡`
       message.hidden = false
+      message.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
     } catch (error) {
       if (error.stale || sessionExpired(error)) return
       message.className = 'rsvp-message rsvp-error'
       message.textContent = error.message
       message.hidden = false
+      message.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
     } finally {
-      if (isCurrent(ticket)) { saveButton.textContent = 'Bewaar RSVP en liedje'; finishOperation(ticket) }
+      if (isCurrent(ticket)) {
+        rsvpButton.textContent = 'RSVP bevestigen'
+        songButton.textContent = 'RSVP bevestigen met liedje'
+        finishOperation(ticket)
+      }
     }
   })
 
