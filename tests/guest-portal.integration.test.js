@@ -293,6 +293,12 @@ test('RSVP and one optional song persist per invitation with server-derived gues
   const invitationId = (await db.prepare('SELECT invitation_id FROM guests WHERE id=?').bind(session.guests[0].id).first()).invitation_id
   const song = await db.prepare('SELECT * FROM invitation_song_requests WHERE invitation_id=?').bind(invitationId).first()
   assert.equal(song.requested_by, session.guests.map(g => g.name).join(' & '))
+  const rsvpWithoutSong = attendance(session, { email: 'rsvp-only@example.test' })
+  delete rsvpWithoutSong.song
+  assert.equal((await api('/api/guest/rsvp', { session, body: rsvpWithoutSong })).response.status, 200)
+  const afterRsvpOnly = (await api('/api/guest/session', { session })).data
+  assert.equal(afterRsvpOnly.email, 'rsvp-only@example.test')
+  assert.equal(afterRsvpOnly.song.title, 'Our song', 'RSVP-only confirmation must preserve the existing song')
   const other = await login('MG-TEST01')
   assert.equal(other.song, null)
   assert.equal((await api('/api/guest/rsvp', { session: other, body: attendance(other, { song: null }) })).response.status, 200)

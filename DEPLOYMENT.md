@@ -80,9 +80,10 @@ Read-only checks on 4 September 2026 found:
   `MG-TEST03`) are still active in the database. The updated application rejects
   them in production. `ALLOW_TEST_INVITATIONS=true` is for isolated local tests
   only and must never be added to production Wrangler variables.
-- Production RSVP settings exist: initial deadline 1 May 2027 at 23:59:59 +02:00;
-  changes until 1 June 2027 at 23:59:59 +02:00. The current API enforces the change
-  deadline. A fresh database must have its settings configured separately.
+- Migration `0009_rsvp_deadline_june_30.sql` sets both the RSVP deadline and the
+  self-service change deadline to 30 June 2027 at 23:59:59 +02:00. The API
+  enforces the change deadline. A fresh database must have its settings
+  configured separately.
 
 After R2 activation, run from the current repository checkout:
 

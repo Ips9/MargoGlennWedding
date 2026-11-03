@@ -1568,6 +1568,7 @@ footer .footer-small {
 .guest-session-bar .text-link { flex: 0 0 auto; border: 0; background: none; font-family: inherit; cursor: pointer; padding: 8px 0; }
 #rsvp .button:disabled, #guestPhotos button:disabled, .guest-session-bar button:disabled { opacity: .55; cursor: default; }
 .invitation-code-label { display: block; }
+.rsvp-deadline { max-width: 560px; margin: 22px auto 0; color: var(--olive-dark); font-size: .82rem; font-weight: 600; line-height: 1.8; }
 #invitationIntro { font-size: .82rem; line-height: 1.8; color: #676657; }
 #invitationHeading { overflow-wrap: anywhere; }
 .guest-gift-tip { max-width: 680px; margin: 30px auto 34px; padding: 28px 30px; box-sizing: border-box; border: 1px solid rgba(138,99,57,.22); background: rgba(250,247,240,.75); text-align: center; }
@@ -1582,7 +1583,10 @@ footer .footer-small {
 .guest-field:focus-visible, .dietary-other-text:focus-visible { outline: 2px solid var(--olive); outline-offset: 2px; }
 .guest-song-fields { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 14px; }
 .guest-form-block .guest-form-help { margin: 8px 0 0; font-size: .7rem; }
-.rsvp-submit-area { margin-top: 28px; }
+.rsvp-submit-area { margin-top: 28px; text-align: center; }
+.rsvp-primary-submit { padding: 28px 20px; border-top: 1px solid rgba(79,84,48,.14); border-bottom: 1px solid rgba(79,84,48,.14); background: rgba(255,253,248,.72); }
+.rsvp-primary-submit p { max-width: 520px; margin: 0 auto 16px; color: #676657; font-size: .76rem; line-height: 1.7; }
+.rsvp-song-submit { margin-top: 18px; }
 .dietary-other>label { display: block; margin-bottom: 8px; color: var(--olive-dark); font-size: .76rem; line-height: 1.6; }
 .guest-photos-section { background: var(--cream); }
 .guest-photos-intro { max-width: 630px; margin: 24px auto 0; color: #777566; font-size: .84rem; line-height: 1.9; }
