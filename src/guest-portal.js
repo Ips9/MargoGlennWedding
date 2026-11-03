@@ -29,11 +29,6 @@ export const guestPortalMarkup = `
     <div id="guestSessionBar" class="guest-session-bar" hidden><span id="guestSessionNames"></span><button id="guestLogout" class="text-link" type="button">Uitloggen</button></div>
     <div id="rsvp-form-container" hidden>
       <div class="rsvp-invitation-heading"><p class="eyebrow">Welkom</p><h3 id="invitationHeading"></h3><p id="invitationIntro"></p></div>
-      <aside id="guestGiftTip" class="guest-gift-tip" aria-labelledby="guestGiftHeading" hidden>
-        <p class="eyebrow">Een kleine tip</p><h4 id="guestGiftHeading">Cadeautip</h4>
-        <p>Jullie aanwezigheid is voor ons het mooiste cadeau. Wil je ons daarnaast graag iets schenken? Een bijdrage voor ons volgende avontuur is heel welkom op dit rekeningnummer:</p>
-        <strong id="guestGiftIban" class="guest-gift-iban"></strong>
-      </aside>
       <form id="rsvpForm">
         <fieldset id="guestRsvpFields" class="guest-unframed">
           <div id="guestList"></div>
@@ -46,6 +41,11 @@ export const guestPortalMarkup = `
             <p>Alles ingevuld? Bevestig hier je aanwezigheid. Een liedje kiezen is niet verplicht.</p>
             <button id="confirmRsvpButton" type="submit" class="button button-primary" data-submit-action="rsvp">RSVP bevestigen</button>
           </div>
+          <aside id="guestGiftTip" class="guest-gift-tip" aria-labelledby="guestGiftHeading" hidden>
+            <p class="eyebrow">Een kleine tip</p><h4 id="guestGiftHeading">Cadeautip</h4>
+            <p>Jullie aanwezigheid is voor ons het mooiste cadeau. Wil je ons daarnaast graag iets schenken? Een bijdrage voor ons volgende avontuur is heel welkom op dit rekeningnummer:</p>
+            <strong id="guestGiftIban" class="guest-gift-iban"></strong>
+          </aside>
           <div class="rsvp-song-block guest-form-block">
             <h4>Een nummer voor de dansvloer</h4>
             <p id="guestSongIntro"></p>
